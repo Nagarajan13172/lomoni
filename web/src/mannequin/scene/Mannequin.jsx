@@ -8,6 +8,10 @@ import { getMaterial } from "./materials";
 
 const MODEL_URL = "/models/lay_figure.glb";
 const TARGET_HEIGHT = 3; // world units
+// Lifts the figure a hair so the sole rests ON the floor instead of the lowest
+// JOINT pivot (the mesh surface sits ~this far below the ankle/toe bone). World
+// units at figureScale=1; scaled with the figure so the gap stays proportional.
+const GROUND_PAD = 0.05;
 
 /**
  * Loads the rigged wooden mannequin, discovers the skeleton, wires shadows,
@@ -53,6 +57,19 @@ export function Mannequin(props) {
         o.receiveShadow = true;
         o.frustumCulled = false; // skinned bounds are wrong once posed
       }
+    });
+    return arr;
+  }, [model]);
+
+  // Contact points for grounding/framing: every joint bone plus the "_end" tip
+  // objects (toes, fingertips, head-top). Their world matrices are authoritative
+  // (they drive the GPU skin), unlike a CPU re-skin of the mesh vertices — which
+  // double-applies this GLB's post-bind ancestor scale and drifts the figure off
+  // the floor (worse the further a pose moves from rest). Bones can't lie.
+  const contacts = useMemo(() => {
+    const arr = [];
+    model.traverse((o) => {
+      if (o.isBone || (o.name && o.name.endsWith("_end"))) arr.push(o);
     });
     return arr;
   }, [model]);
@@ -121,18 +138,24 @@ export function Mannequin(props) {
     baseScale.current = TARGET_HEIGHT / (size.y || 1);
   }, [model]);
 
-  // Ground-snap: scale, then drop the true posed lowest point to y=0.
+  // Ground-snap: scale, then drop the lowest posed joint to the floor. Recomputed
+  // from scratch every call (position reset to 0 first), so nothing accumulates.
   const figureScaleRef = useRef(figureScale);
   figureScaleRef.current = figureScale;
   const doGroundSnap = useCallback(() => {
     const g = outer.current;
     if (!g) return;
-    g.scale.setScalar(baseScale.current * figureScaleRef.current);
+    const fs = figureScaleRef.current;
+    g.scale.setScalar(baseScale.current * fs);
     g.position.set(0, 0, 0);
     g.updateWorldMatrix(true, true);
-    const box = sampledBox(meshes);
-    if (!box.isEmpty() && Number.isFinite(box.min.y)) g.position.y = -box.min.y;
-  }, [meshes]);
+    let lowest = Infinity;
+    for (const o of contacts) {
+      const y = o.matrixWorld.elements[13]; // world Y (matches the rendered skin)
+      if (y < lowest) lowest = y;
+    }
+    if (Number.isFinite(lowest)) g.position.y = -lowest + GROUND_PAD * fs;
+  }, [contacts]);
 
   // Register the snap for the tweener (keeps grounded through a slerp).
   useEffect(() => {
@@ -146,12 +169,17 @@ export function Mannequin(props) {
       const g = outer.current;
       if (!g) return null;
       g.updateWorldMatrix(true, true);
-      const box = sampledBox(meshes);
-      return box.isEmpty() ? null : box.clone();
+      _box.makeEmpty();
+      for (const o of contacts) {
+        const e = o.matrixWorld.elements;
+        _v.set(e[12], e[13], e[14]);
+        _box.expandByPoint(_v);
+      }
+      return _box.isEmpty() ? null : _box.clone();
     };
     setGetBounds(fn);
     return () => setGetBounds(null);
-  }, [meshes, setGetBounds]);
+  }, [contacts, setGetBounds]);
 
   // Re-ground on pose/scale change.
   useLayoutEffect(() => {
@@ -187,27 +215,8 @@ export function Mannequin(props) {
   );
 }
 
-// Sample the posed skinned vertices into a world-space bounding box (used for
-// both ground-snap (box.min.y) and camera auto-frame (center + size)).
+// Scratch objects for the bone-based posed bounding box (ground-snap + framing).
 const _v = new THREE.Vector3();
 const _box = new THREE.Box3();
-function sampledBox(meshes) {
-  _box.makeEmpty();
-  for (const mesh of meshes) {
-    if (!mesh.isSkinnedMesh) continue;
-    mesh.skeleton?.update?.();
-    const posAttr = mesh.geometry.attributes.position;
-    const n = posAttr.count;
-    const step = Math.max(1, Math.floor(n / 600));
-    const fn = mesh.applyBoneTransform ? "applyBoneTransform" : "boneTransform";
-    for (let i = 0; i < n; i += step) {
-      _v.fromBufferAttribute(posAttr, i);
-      mesh[fn](i, _v);
-      mesh.localToWorld(_v);
-      _box.expandByPoint(_v);
-    }
-  }
-  return _box;
-}
 
 useGLTF.preload(MODEL_URL);

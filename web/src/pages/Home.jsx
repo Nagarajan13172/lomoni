@@ -93,7 +93,7 @@ export default function Home() {
                 style={{ background: "radial-gradient(circle at 58% 44%, rgba(236,90,65,0.14), transparent 60%)" }}
               />
               <div className="stripes-motif pointer-events-none absolute right-2 top-6 hidden h-[320px] w-[200px] rotate-6 opacity-[0.10] md:block" />
-              <HeroBust className="absolute inset-0" />
+              <HeroBust className="absolute inset-0" src="/models/paper-bust-smooth.glb" />
             </div>
           </div>
         </div>

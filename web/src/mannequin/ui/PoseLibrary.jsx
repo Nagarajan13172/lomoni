@@ -14,7 +14,7 @@ export function PoseLibrary() {
 
   const apply = (p) => {
     setActivePose(p.id);
-    queuePose(p.pose, { additive: true });
+    queuePose(p.renderPose || p.pose, { additive: true });
   };
 
   const list = useMemo(() => {

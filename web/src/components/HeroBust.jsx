@@ -3,13 +3,11 @@ import { Canvas } from "@react-three/fiber";
 import { Environment, Lightformer, AdaptiveDpr, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
-const MODEL_URL = "/models/paperbust.glb";
+const MODEL_URL = "/models/paper-bust.glb";
 const DRACO_PATH = "/draco/";
 
-useGLTF.preload(MODEL_URL, DRACO_PATH);
-
-function Bust() {
-  const { scene } = useGLTF(MODEL_URL, DRACO_PATH);
+function Bust({ src }) {
+  const { scene } = useGLTF(src, DRACO_PATH);
 
   // Centre the model at the origin, size it down, and give it a soft, paper-like
   // (never metallic) response to the environment. Sits still — the user drives
@@ -56,7 +54,7 @@ function StudioEnv() {
   );
 }
 
-export default function HeroBust({ className = "" }) {
+export default function HeroBust({ className = "", src = MODEL_URL }) {
   const wrapRef = useRef(null);
   const [active, setActive] = useState(true);
   // Drag-to-rotate is a mouse interaction; disable on touch so a swipe over the
@@ -104,7 +102,7 @@ export default function HeroBust({ className = "" }) {
         <directionalLight position={[-4, 2, -3]} intensity={0.5} color="#dbe4ff" />
         <Suspense fallback={null}>
           <StudioEnv />
-          <Bust />
+          <Bust src={src} />
         </Suspense>
         {canDrag && (
           <OrbitControls
