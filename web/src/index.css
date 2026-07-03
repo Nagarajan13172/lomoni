@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+/* ----------------------------------------------------------------
+   LOMONI Design Studio — Design tokens
+   Style: Editorial / Creative-Studio (Brutalism + Motion-Driven)
+   Type:  Space Grotesk (display) + DM Sans (body)
+   Brand: coral + ink on warm paper, multicolor exam-track accents
+----------------------------------------------------------------- */
+@theme {
+  --color-ink: #141312;
+  --color-ink-soft: #3b3a37;
+  --color-paper: #fbf8f2;
+  --color-paper-deep: #f3ede1;
+  --color-card: #ffffff;
+
+  --color-coral: #ec5a41;
+  --color-coral-deep: #d8401f;
+
+  /* exam-track accents (from the brand stripe motif) */
+  --color-track-purple: #6c5cf5;
+  --color-track-green: #14a06b;
+  --color-track-yellow: #f4b813;
+  --color-track-blue: #2f72f0;
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1.5rem;
+}
+
+@layer base {
+  * {
+    border-color: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+  }
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-display);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  ::selection {
+    background: var(--color-coral);
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-coral);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  /* Oversized editorial display text */
+  .display-xl {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    font-size: clamp(2.75rem, 9vw, 8rem);
+  }
+  .display-lg {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    font-size: clamp(2.25rem, 6vw, 4.5rem);
+  }
+
+  .eyebrow {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+
+  .container-x {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .container-x { padding-inline: 2.5rem; }
+  }
+
+  /* Minimalist card — clean hairline border, no shadow */
+  .card-brutal {
+    background: var(--color-card);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+    border-radius: var(--radius-card);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.25s ease;
+  }
+  .card-brutal:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--color-ink) 22%, transparent);
+  }
+
+  /* Primary pill button */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.85rem 1.6rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-ink);
+    transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--color-coral);
+    color: #fff;
+    border-color: var(--color-coral);
+  }
+  .btn-primary:hover { transform: translateY(-2px); background: var(--color-coral-deep); border-color: var(--color-coral-deep); }
+  .btn-ghost { background: transparent; color: var(--color-ink); }
+  .btn-ghost:hover { background: var(--color-ink); color: var(--color-paper); }
+
+  /* Form inputs */
+  .inp {
+    width: 100%;
+    border: 1.5px solid color-mix(in srgb, var(--color-ink) 25%, transparent);
+    border-radius: 0.85rem;
+    background: var(--color-paper);
+    padding: 0.75rem 0.95rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--color-ink);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .inp:focus {
+    outline: none;
+    border-color: var(--color-coral);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-coral) 25%, transparent);
+  }
+  .inp::placeholder { color: color-mix(in srgb, var(--color-ink) 40%, transparent); }
+
+  .link-underline {
+    background-image: linear-gradient(var(--color-coral), var(--color-coral));
+    background-size: 0% 2px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.3s ease;
+  }
+  .link-underline:hover { background-size: 100% 2px; }
+}
+
+/* Diagonal brand-stripe motif (recreated crisply in CSS) */
+.stripes-motif {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-coral) 0 14px,
+    transparent 14px 46px,
+    var(--color-track-purple) 46px 60px,
+    transparent 60px 92px,
+    var(--color-track-green) 92px 106px,
+    transparent 106px 138px,
+    var(--color-track-yellow) 138px 152px,
+    transparent 152px 184px,
+    var(--color-track-blue) 184px 198px,
+    transparent 198px 230px
+  );
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee 26s linear infinite;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
