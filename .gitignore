@@ -1,0 +1,11 @@
+# Large binary assets (exceed GitHub file-size limits)
+*.zip
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+
+# Logs
+*.log
