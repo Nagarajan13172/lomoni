@@ -1,24 +1,30 @@
 import { useState } from "react";
+import { AccordionSection } from "./Accordion";
 import { Presets } from "./Presets";
 import { PoseLibrary } from "./PoseLibrary";
 import { JointList } from "./JointList";
 import { JointInspector } from "./JointInspector";
-import { Toolbar } from "./Toolbar";
-import { ModelPanel } from "./ModelPanel";
-import { ScenePanel } from "./ScenePanel";
+import { POSE_LIBRARY } from "../pose/poseLibrary";
 import { useStore } from "../store";
-
-const TABS = [
-  { id: "poses", label: "Poses", icon: "🧍" },
-  { id: "edit", label: "Edit", icon: "🎯" },
-  { id: "model", label: "Model", icon: "🎨" },
-  { id: "scene", label: "Scene", icon: "🎬" },
-];
 
 export function ControlPanel() {
   const ready = useStore((s) => s.ready);
+  const resetAll = useStore((s) => s.resetAll);
+  const mirror = useStore((s) => s.mirror);
+  const randomize = useStore((s) => s.randomize);
+  const showHandles = useStore((s) => s.showHandles);
+  const toggleHandles = useStore((s) => s.toggleHandles);
+  const gl = useStore((s) => s.gl);
   const [open, setOpen] = useState(true);
-  const [tab, setTab] = useState("poses");
+
+  const screenshot = () => {
+    if (!gl) return;
+    const url = gl.domElement.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "maniqu-queen.png";
+    a.click();
+  };
 
   return (
     <>
@@ -41,56 +47,48 @@ export function ControlPanel() {
           </div>
         </header>
 
-        <nav className="tabs">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              className={"tab" + (tab === t.id ? " tab--active" : "")}
-              onClick={() => setTab(t.id)}
-            >
-              <span className="tab__icon">{t.icon}</span>
-              <span className="tab__label">{t.label}</span>
-            </button>
-          ))}
-        </nav>
-
         <div className="panel__scroll">
-          {tab === "poses" && (
-            <>
-              <section className="section">
-                <h2 className="section__title">Quick poses</h2>
-                <Presets />
-              </section>
-              <section className="section">
-                <h2 className="section__title">Pose library</h2>
-                <PoseLibrary />
-              </section>
-            </>
-          )}
+          <AccordionSection title="Pose library" icon="🧍" badge={POSE_LIBRARY.length} defaultOpen>
+            <PoseLibrary />
+          </AccordionSection>
 
-          {tab === "edit" && (
-            <>
-              <section className="section">
-                <h2 className="section__title">Joints</h2>
-                <JointList />
-              </section>
-              <section className="section">
-                <h2 className="section__title">Selected joint</h2>
-                <JointInspector />
-              </section>
-              <section className="section">
-                <h2 className="section__title">Actions</h2>
-                <Toolbar />
-              </section>
-            </>
-          )}
+          <AccordionSection title="Quick poses" icon="⚡">
+            <Presets />
+          </AccordionSection>
 
-          {tab === "model" && <ModelPanel />}
-          {tab === "scene" && <ScenePanel />}
+          <AccordionSection title="Edit joints (bend by hand)" icon="🎯">
+            <div className="acc-sub">Joints</div>
+            <JointList />
+            <div className="acc-sub" style={{ marginTop: 12 }}>Selected joint</div>
+            <JointInspector />
+          </AccordionSection>
+
+          <AccordionSection title="Actions" icon="🛠️">
+            <div className="toolbar__grid">
+              <button className="mq-btn" disabled={!ready} onClick={resetAll}>
+                ↺ Reset all
+              </button>
+              <button
+                className={"mq-btn" + (showHandles ? " mq-btn--on" : "")}
+                onClick={toggleHandles}
+              >
+                {showHandles ? "◉" : "○"} Joint dots
+              </button>
+              <button className="mq-btn" disabled={!ready} onClick={() => mirror("l2r")}>
+                ⇄ Mirror L→R
+              </button>
+              <button className="mq-btn" disabled={!ready} onClick={randomize}>
+                🎲 Randomize
+              </button>
+              <button className="mq-btn" disabled={!ready} onClick={screenshot}>
+                📷 Screenshot
+              </button>
+            </div>
+          </AccordionSection>
         </div>
 
         <footer className="panel__foot">
-          Drag empty space to orbit · scroll to zoom
+          Click a pose, or a dot to bend by hand · scroll to zoom
         </footer>
       </aside>
     </>

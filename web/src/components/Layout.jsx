@@ -1,8 +1,8 @@
-import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import SmoothScroll from "./SmoothScroll";
 
 export default function Layout() {
   const { pathname } = useLocation();
@@ -10,13 +10,10 @@ export default function Layout() {
   // The pose studio is a full-viewport tool — no footer, no page scroll.
   const isStudio = pathname === "/studio";
 
-  // Scroll to top on every route change
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
   return (
     <div className="flex min-h-dvh flex-col">
+      {/* Momentum scroll for the whole site (handles scroll-to-top on nav too) */}
+      <SmoothScroll disabled={isStudio} />
       <div className="grain" aria-hidden="true" />
       <Navbar />
       <motion.main

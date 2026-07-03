@@ -1,17 +1,41 @@
 import { motion } from "framer-motion";
 
-/* Scroll-reveal wrapper — respects reduced-motion automatically via framer */
-export function Reveal({ children, delay = 0, y = 24, className = "" }) {
+/* Scroll-reveal wrapper. Pass `mount` for above-the-fold content that must play
+   on load (not wait for an intersection). Respects reduced-motion via framer. */
+export function Reveal({ children, delay = 0, y = 24, className = "", mount = false }) {
+  const trigger = mount
+    ? { animate: { opacity: 1, y: 0 } }
+    : { whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: "-80px" } };
   return (
     <motion.div
       className={className}
       initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
+      {...trigger}
       transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
+  );
+}
+
+/* Line-mask reveal — the child slides up from behind a clipped edge. Ideal for
+   headline lines. Wrap each line in its own <MaskReveal> for a staggered rise.
+   `mount` plays on load for hero headlines that sit above the fold. */
+export function MaskReveal({ children, delay = 0, className = "", mount = false }) {
+  const trigger = mount
+    ? { animate: { y: "0%" } }
+    : { whileInView: { y: "0%" }, viewport: { once: true, margin: "-60px" } };
+  return (
+    <span className={`block overflow-hidden py-[0.12em] -my-[0.12em] ${className}`}>
+      <motion.span
+        className="block"
+        initial={{ y: "115%" }}
+        {...trigger}
+        transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay }}
+      >
+        {children}
+      </motion.span>
+    </span>
   );
 }
 

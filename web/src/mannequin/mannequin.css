@@ -697,6 +697,67 @@
     line-height: 1.4;
   }
 
+  /* ---------- Accordion ---------- */
+  .acc {
+    border-bottom: 1px solid var(--stroke);
+  }
+  .acc__head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 4px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .acc__title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .acc__icon {
+    font-size: 15px;
+    line-height: 1;
+  }
+  .acc__badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--chip);
+    border: 1px solid var(--stroke);
+    border-radius: 999px;
+    padding: 1px 7px;
+  }
+  .acc__chevron {
+    color: var(--muted);
+    transition: transform 0.2s ease;
+    flex: none;
+  }
+  .acc--open > .acc__head .acc__chevron {
+    transform: rotate(180deg);
+  }
+  .acc--open > .acc__head .acc__title {
+    color: var(--text);
+  }
+  .acc__body {
+    padding: 2px 2px 16px;
+  }
+  .acc-sub {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 9px;
+  }
+
   @media (max-width: 640px) {
     .panel {
       top: auto;

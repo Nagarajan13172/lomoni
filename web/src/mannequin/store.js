@@ -49,7 +49,7 @@ export const useStore = create((set, get) => ({
 
   selected: null, // joint name currently being edited
   activePoseId: null, // id of the currently-applied library pose (for highlight)
-  showHandles: false, // joint dots hidden by default for a clean model; toggle in the toolbar
+  showHandles: true, // joint dots visible so you can click + pose
   gl: null, // renderer, captured for screenshots
   poseVersion: 0, // bump to notify the DOM that bones moved (presets, reset...)
   theme: "dark", // "dark" | "light" | "blueprint" — see themes.js
