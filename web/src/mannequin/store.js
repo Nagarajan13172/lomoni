@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import * as THREE from "three";
+import { applyBoneCorrection } from "./character/retarget";
+import { DEFAULT_CHARACTER_ID } from "./character/characters";
 
 /**
  * The lay_figure rig has 17 poseable joints (the "_end" tip bones are not
@@ -47,9 +49,26 @@ export const useStore = create((set, get) => ({
   rest: {}, // name -> THREE.Quaternion (rest pose, for reset)
   ready: false,
 
+  // Selected character + the active retarget corrections. `corrections` is null
+  // for the native rig (poses apply directly); for an imported skeleton it is
+  // { rigBone: THREE.Quaternion C } so authored offsets map onto that skeleton.
+  characterId: DEFAULT_CHARACTER_ID,
+  corrections: null,
+  characterReport: null, // { matched, missing, total } from the last retarget
+  // Pose carried across a character swap so switching models keeps the pose
+  // instead of snapping back to rest. Captured in SOURCE frame (see
+  // getSourcePose) and re-applied by <Mannequin> once the new rig is ready.
+  pendingPose: null,
+  setCharacter: (id) => {
+    if (id === get().characterId) return;
+    set({ characterId: id, ready: false, pendingPose: get().getSourcePose() });
+  },
+  setCorrections: (corrections, characterReport = null) =>
+    set({ corrections, characterReport }),
+
   selected: null, // joint name currently being edited
   activePoseId: null, // id of the currently-applied library pose (for highlight)
-  showHandles: true, // joint dots visible so you can click + pose
+  showHandles: false, // joint dots hidden by default (toggle on to click + pose)
   gl: null, // renderer, captured for screenshots
   poseVersion: 0, // bump to notify the DOM that bones moved (presets, reset...)
   theme: "dark", // "dark" | "light" | "blueprint" — see themes.js
@@ -133,19 +152,51 @@ export const useStore = create((set, get) => ({
     return pose;
   },
 
+  /**
+   * Read the current pose as SOURCE-frame additive offsets { name: [x,y,z] } —
+   * the character-independent form. Inverts each bone's rest and retarget
+   * correction so the pose can be re-applied to ANY character (used to keep a
+   * pose alive across a character swap). Returns null if the figure is at rest.
+   */
+  getSourcePose: () => {
+    const { bones, rest, corrections } = get();
+    const pose = {};
+    let any = false;
+    for (const j of JOINTS) {
+      const b = bones[j.name];
+      const r = rest[j.name];
+      if (!b || !r) continue;
+      // Δ_tgt = rest⁻¹ · q ; Δ_src = C⁻¹ · Δ_tgt · C (inverse of the correction)
+      const dTgt = r.clone().invert().multiply(b.quaternion);
+      const C = corrections?.[j.name];
+      const dSrc = C ? C.clone().invert().multiply(dTgt).multiply(C) : dTgt;
+      _euler.setFromQuaternion(dSrc, "XYZ");
+      if (Math.abs(_euler.x) + Math.abs(_euler.y) + Math.abs(_euler.z) > 1e-4) {
+        pose[j.name] = [_euler.x, _euler.y, _euler.z];
+        any = true;
+      }
+    }
+    return any ? pose : null;
+  },
+
   /** Apply a { name: [x, y, z] } pose. Missing joints are left untouched. */
   applyPose: (pose, { additive = false } = {}) => {
-    const { bones, rest } = get();
+    const { bones, rest, corrections } = get();
     for (const j of JOINTS) {
       const b = bones[j.name];
       const r = pose[j.name];
       if (!b) continue;
       if (r) {
         if (additive) {
-          // treat the pose value as an offset from rest
+          // treat the pose value as an offset from rest, retargeted onto this
+          // character's bone frame (identity for the native rig)
           b.quaternion.copy(rest[j.name]);
           _euler.set(r[0], r[1], r[2], "XYZ");
-          b.quaternion.multiply(new THREE.Quaternion().setFromEuler(_euler));
+          const off = applyBoneCorrection(
+            corrections?.[j.name],
+            new THREE.Quaternion().setFromEuler(_euler)
+          );
+          b.quaternion.multiply(off);
         } else {
           b.rotation.set(r[0], r[1], r[2]);
         }
@@ -203,7 +254,7 @@ export const useStore = create((set, get) => ({
 
   /** Gentle random pose — enough to look alive, not enough to explode. */
   randomize: () => {
-    const { bones, rest } = get();
+    const { bones, rest, corrections } = get();
     const rand = randSeeded(get().poseVersion + 1);
     const AMT = {
       waist: 0.15, body: 0.25, head: 0.4,
@@ -226,7 +277,11 @@ export const useStore = create((set, get) => ({
         (rand() - 0.5) * 2 * a,
         "XYZ"
       );
-      b.quaternion.multiply(new THREE.Quaternion().setFromEuler(_euler));
+      const off = applyBoneCorrection(
+        corrections?.[j.name],
+        new THREE.Quaternion().setFromEuler(_euler)
+      );
+      b.quaternion.multiply(off);
     }
     set({ activePoseId: null });
     get().bump();

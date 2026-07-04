@@ -28,7 +28,10 @@ function stabilizeVerticalAxis(pose, category) {
  * Shape: { id, name, category, icon, tags, desc, pose:{bone:[x,y,z]} }.
  */
 export const POSE_LIBRARY = POSE_DATA.map((p) => {
-  const pose = poseFromCalls(p.calls);
+  // A pose is authored either as anatomy `calls`, or as a raw `pose` object of
+  // {bone:[x,y,z]} offsets (radians) — used by poses imported from motion clips
+  // (see scripts/extract-fbx-pose.mjs), which are already in the source frame.
+  const pose = p.pose || poseFromCalls(p.calls);
   return {
     id: p.id,
     name: p.name,

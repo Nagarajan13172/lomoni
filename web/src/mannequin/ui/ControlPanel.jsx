@@ -2,9 +2,11 @@ import { useState } from "react";
 import { AccordionSection } from "./Accordion";
 import { Presets } from "./Presets";
 import { PoseLibrary } from "./PoseLibrary";
+import { CharacterLibrary } from "./CharacterLibrary";
 import { JointList } from "./JointList";
 import { JointInspector } from "./JointInspector";
 import { POSE_LIBRARY } from "../pose/poseLibrary";
+import { CHARACTERS } from "../character/characters";
 import { useStore } from "../store";
 
 export function ControlPanel() {
@@ -48,7 +50,11 @@ export function ControlPanel() {
         </header>
 
         <div className="panel__scroll">
-          <AccordionSection title="Pose library" icon="🧍" badge={POSE_LIBRARY.length} defaultOpen>
+          <AccordionSection title="Characters" icon="🎭" badge={CHARACTERS.length} defaultOpen>
+            <CharacterLibrary />
+          </AccordionSection>
+
+          <AccordionSection title="Pose library" icon="🧍" badge={POSE_LIBRARY.length}>
             <PoseLibrary />
           </AccordionSection>
 
