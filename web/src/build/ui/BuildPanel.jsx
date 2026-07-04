@@ -7,6 +7,14 @@ export function BuildPanel() {
   const type = useBuild((s) => s.type);
   const setType = useBuild((s) => s.setType);
   const [pcat, setPcat] = useState("Bricks");
+
+  // Switching category selects its first piece, so the held piece (and the
+  // ghost preview) changes to a plate/tile immediately — not just the list.
+  const pickCat = (c) => {
+    setPcat(c);
+    const first = Object.keys(BRICKS).find((id) => BRICKS[id].cat === c);
+    if (first) setType(first);
+  };
   const color = useBuild((s) => s.color);
   const setColor = useBuild((s) => s.setColor);
   const rot = useBuild((s) => s.rot);
@@ -51,7 +59,7 @@ export function BuildPanel() {
             <button
               key={c}
               className={"build-cat" + (pcat === c ? " build-cat--on" : "")}
-              onClick={() => setPcat(c)}
+              onClick={() => pickCat(c)}
             >
               {c}
             </button>
