@@ -3,7 +3,7 @@
 //
 // Pick ONE shape, then move the single light around and watch its shadow swing
 // across the floor. That's the whole tool. This file holds the shape catalog
-// and the sun-position helper; everything else reads from shapesStore.js.
+// and the helper used to place the visible light from intuitive angle values.
 // ──────────────────────────────────────────────────────────────────────────
 
 // Each shape maps to a THREE geometry element. `geom` is [tagName, args] — the
@@ -25,9 +25,8 @@ export const SHAPES = [
 ];
 
 /**
- * Convert the light's direction/height (degrees) into a world position on a
- * dome of the given radius. The light always aims at the origin, so this
- * position IS the light direction — moving it moves the shadow.
+ * Convert top-view angle + height + distance into a world-space light position.
+ * Moving these values changes both the shading and the cast shadow.
  */
 export function lightPosition(azimuthDeg, elevationDeg, radius = 18) {
   const az = (azimuthDeg * Math.PI) / 180;

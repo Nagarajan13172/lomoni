@@ -1,5 +1,5 @@
 import { useShapes } from "../shapesStore";
-import { SHAPES, LIGHT_COLORS, PAINT_COLORS, PRESET_NAMES } from "../shapes";
+import { SHAPES } from "../shapes";
 
 /** A labelled range slider with a live value readout. */
 function Slider({ label, value, min, max, step, onChange, fmt }) {
@@ -21,28 +21,41 @@ function Slider({ label, value, min, max, step, onChange, fmt }) {
   );
 }
 
-/** One on/off pill in the scene-toggles grid. */
-function Toggle({ label, on, onClick }) {
+function TopViewGuide({ azimuth }) {
+  const angle = (azimuth * Math.PI) / 180;
+  const x = 50 + Math.sin(angle) * 34;
+  const y = 50 - Math.cos(angle) * 34;
+
   return (
-    <button className={"shapes-toggle" + (on ? " shapes-toggle--on" : "")} onClick={onClick}>
-      {label}
-    </button>
+    <div className="shapes-guide">
+      <div className="shapes-guide__label">Top view</div>
+      <div className="shapes-guide__radar">
+        <div className="shapes-guide__ring" />
+        <div
+          className="shapes-guide__beam"
+          style={{ transform: `translate(-50%, -100%) rotate(${azimuth}deg)` }}
+        />
+        <div className="shapes-guide__shape" />
+        <div className="shapes-guide__light" style={{ left: `${x}%`, top: `${y}%` }} />
+        <div className="shapes-guide__sun" style={{ left: `${x}%`, top: `${y}%` }}>
+          Sun
+        </div>
+      </div>
+    </div>
   );
 }
 
-/** Lighting + material + scene controls for the Shapes studio. */
+/** Minimal controls: one shape picker plus the single visible light. */
 export function ShapesPanel() {
-  const s = useShapes();
-  const selectedLabel = SHAPES.find((x) => x.type === s.selected)?.label;
-
-  const screenshot = () => {
-    const gl = useShapes.getState().gl;
-    if (!gl) return;
-    const a = document.createElement("a");
-    a.href = gl.domElement.toDataURL("image/png");
-    a.download = "my-shapes.png";
-    a.click();
-  };
+  const shape = useShapes((s) => s.shape);
+  const azimuth = useShapes((s) => s.azimuth);
+  const elevation = useShapes((s) => s.elevation);
+  const radius = useShapes((s) => s.radius);
+  const setShape = useShapes((s) => s.setShape);
+  const setAzimuth = useShapes((s) => s.setAzimuth);
+  const setElevation = useShapes((s) => s.setElevation);
+  const setRadius = useShapes((s) => s.setRadius);
+  const selected = SHAPES.find((item) => item.type === shape) ?? SHAPES[0];
 
   return (
     <aside className="shapes-panel">
@@ -50,97 +63,42 @@ export function ShapesPanel() {
         <div className="shapes-panel__logo">🔮</div>
         <div>
           <h1 className="shapes-panel__title">Shapes</h1>
-          <p className="shapes-panel__sub">
-            {selectedLabel ? `Selected: ${selectedLabel}` : `${SHAPES.length} shapes lit by one sun`}
-          </p>
+          <p className="shapes-panel__sub">See the glowing light in the scene, then place it with top angle and height.</p>
         </div>
       </header>
 
-      {/* ---------- Lighting moods ---------- */}
-      <section>
-        <h2 className="shapes-sec">Lighting mood</h2>
-        <div className="shapes-cats">
-          {PRESET_NAMES.map((name) => (
-            <button
-              key={name}
-              className={"shapes-cat" + (s.preset === name ? " shapes-cat--on" : "")}
-              onClick={() => s.applyPreset(name)}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* ---------- The sun ---------- */}
       <section className="shapes-stack">
-        <h2 className="shapes-sec">The sun</h2>
-        <Slider label="Direction" value={s.azimuth} min={0} max={360} step={1} onChange={s.setAzimuth} fmt={(v) => `${v}°`} />
-        <Slider label="Height" value={s.elevation} min={8} max={90} step={1} onChange={s.setElevation} fmt={(v) => `${v}°`} />
-        <Slider label="Brightness" value={s.intensity} min={0} max={3} step={0.05} onChange={s.setIntensity} fmt={(v) => v.toFixed(2)} />
-        <div className="shapes-swatches shapes-swatches--wide">
-          {LIGHT_COLORS.map((c) => (
-            <button
-              key={c}
-              className={"shapes-sw" + (s.lightColor === c ? " shapes-sw--on" : "")}
-              style={{ background: c }}
-              onClick={() => s.setLightColor(c)}
-              aria-label={`light ${c}`}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* ---------- Fill & shadow ---------- */}
-      <section className="shapes-stack">
-        <h2 className="shapes-sec">Fill &amp; shadow</h2>
-        <Slider label="Ambient fill" value={s.ambient} min={0} max={1} step={0.01} onChange={s.setAmbient} fmt={(v) => v.toFixed(2)} />
-        <Slider label="Shadow softness" value={s.softness} min={0} max={12} step={0.5} onChange={s.setSoftness} fmt={(v) => v.toFixed(1)} />
-      </section>
-
-      {/* ---------- Material ---------- */}
-      <section className="shapes-stack">
-        <h2 className="shapes-sec">Material</h2>
-        <Slider label="Metalness" value={s.metalness} min={0} max={1} step={0.01} onChange={s.setMetalness} fmt={(v) => v.toFixed(2)} />
-        <Slider label="Roughness" value={s.roughness} min={0} max={1} step={0.01} onChange={s.setRoughness} fmt={(v) => v.toFixed(2)} />
-        <div className="shapes-swatches">
-          <button
-            className={"shapes-sw shapes-sw--rainbow" + (s.colorMode === "rainbow" ? " shapes-sw--on" : "")}
-            onClick={() => s.setColorMode("rainbow")}
-            aria-label="rainbow"
-          >
-            🌈
-          </button>
-          {PAINT_COLORS.slice(1).map((c) => (
-            <button
-              key={c}
-              className={"shapes-sw" + (s.colorMode === c ? " shapes-sw--on" : "")}
-              style={{ background: c }}
-              onClick={() => s.setColorMode(c)}
-              aria-label={c}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* ---------- Scene toggles ---------- */}
-      <section>
-        <h2 className="shapes-sec">Scene</h2>
-        <div className="shapes-toggles">
-          <Toggle label="☀ Animate sun" on={s.animate} onClick={() => s.toggle("animate")} />
-          <Toggle label="⟳ Spin shapes" on={s.spin} onClick={() => s.toggle("spin")} />
-          <Toggle label="▦ Floor" on={s.showFloor} onClick={() => s.toggle("showFloor")} />
-          <Toggle label="◎ Sun marker" on={s.showSun} onClick={() => s.toggle("showSun")} />
-        </div>
+        <h2 className="shapes-sec">Shape</h2>
+        <label className="shapes-field">
+          <span className="shapes-field__label">Choose one shape</span>
+          <select className="shapes-select" value={shape} onChange={(e) => setShape(e.target.value)}>
+            {SHAPES.map((item) => (
+              <option key={item.type} value={item.type}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </section>
 
       <section className="shapes-stack">
-        <button className="shapes-btn" onClick={screenshot}>📷 Screenshot</button>
+        <h2 className="shapes-sec">Light</h2>
+        <p className="shapes-note">The glowing marker is the sun. The dotted guides show the light rays and how the shadow is being built.</p>
+        <TopViewGuide azimuth={azimuth} />
+        <Slider label="Top angle" value={azimuth} min={0} max={360} step={1} onChange={setAzimuth} fmt={(v) => `${v}°`} />
+        <Slider label="Height angle" value={elevation} min={8} max={85} step={1} onChange={setElevation} fmt={(v) => `${v}°`} />
+        <Slider label="Distance" value={radius} min={8} max={24} step={0.5} onChange={setRadius} fmt={(v) => v.toFixed(1)} />
+        <div className="shapes-readout">
+          <span>{`top ${azimuth.toFixed(0)}°`}</span>
+          <span>{`height ${elevation.toFixed(0)}°`}</span>
+          <span>{`dist ${radius.toFixed(1)}`}</span>
+        </div>
       </section>
 
       <footer className="shapes-foot">
-        Drag the sun's <b>Direction</b> &amp; <b>Height</b> to relight the scene · click a shape to
-        focus it · drag to orbit · scroll to zoom
+        <b>{selected.label}</b> is on the floor now. Move the <b>sun</b> with <b>Top angle</b>, then tune
+        {" "}
+        <b>Height angle</b> and <b>Distance</b>. The dotted construction lines and shadow update live.
       </footer>
     </aside>
   );

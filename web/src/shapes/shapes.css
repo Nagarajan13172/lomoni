@@ -1,14 +1,14 @@
-/* Shapes lighting-studio styles — all scoped under .shapes-root so they can't
-   leak into the surrounding Tailwind site. Mirrors the block builder's layout,
-   with a violet→cyan accent to set it apart. */
+/* Shapes lighting-studio styles — all scoped under .shapes-root so they stay
+   local to the page. This panel is intentionally small: just shape selection
+   and the single light controls. */
 .shapes-root {
-  --text: #e7ecff;
-  --muted: #8b93ad;
-  --stroke: rgba(255, 255, 255, 0.1);
-  --stroke-strong: rgba(255, 255, 255, 0.2);
-  --chip: rgba(255, 255, 255, 0.06);
-  --accent: #8b5cf6;
-  --accent-2: #22d3ee;
+  --text: #f5f7fb;
+  --muted: #bac2d4;
+  --stroke: rgba(255, 255, 255, 0.12);
+  --stroke-strong: rgba(255, 255, 255, 0.26);
+  --panel: rgba(15, 19, 28, 0.84);
+  --accent: #f7b84e;
+  --accent-2: #ffdf8c;
   --font: "DM Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif;
 
@@ -30,19 +30,17 @@
 
 .shapes-root .shapes-panel {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  bottom: 16px;
-  width: 292px;
+  top: 18px;
+  right: 18px;
+  width: min(320px, calc(100vw - 36px));
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 18px;
-  border-radius: 18px;
-  overflow-y: auto;
-  background: rgba(18, 20, 28, 0.9);
+  gap: 18px;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--panel);
   border: 1px solid var(--stroke);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(12px);
 }
 
@@ -58,17 +56,18 @@
   place-items: center;
   font-size: 22px;
   border-radius: 12px;
-  background: linear-gradient(140deg, var(--accent), var(--accent-2));
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
 }
 .shapes-root .shapes-panel__title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   margin: 0;
 }
 .shapes-root .shapes-panel__sub {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--muted);
   margin: 2px 0 0;
+  line-height: 1.45;
 }
 
 .shapes-root .shapes-sec {
@@ -85,33 +84,116 @@
   gap: 10px;
 }
 
-/* Preset pills ---------------------------------------------------------- */
-.shapes-root .shapes-cats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.shapes-root .shapes-cat {
-  flex: 1 1 auto;
-  padding: 7px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--stroke);
-  background: var(--chip);
-  color: var(--muted);
+.shapes-root .shapes-note {
+  margin: -2px 0 2px;
   font-size: 11.5px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.14s, color 0.14s, border-color 0.14s;
+  line-height: 1.45;
+  color: var(--muted);
 }
-.shapes-root .shapes-cat:hover:not(.shapes-cat--on) {
+
+.shapes-root .shapes-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.shapes-root .shapes-guide__label {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.shapes-root .shapes-guide__radar {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 148px;
+  align-self: center;
+}
+.shapes-root .shapes-guide__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0 16%, transparent 17%),
+    radial-gradient(circle at center, transparent 0 56%, rgba(255, 255, 255, 0.06) 57% 58%, transparent 59%);
+}
+.shapes-root .shapes-guide__beam {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 34%;
+  transform-origin: 50% 100%;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(247, 184, 78, 0.95) 0 8px,
+    rgba(247, 184, 78, 0) 8px 14px
+  );
+}
+.shapes-root .shapes-guide__shape,
+.shapes-root .shapes-guide__light {
+  position: absolute;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+}
+.shapes-root .shapes-guide__shape {
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  background: #eef0f3;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
+}
+.shapes-root .shapes-guide__light {
+  width: 14px;
+  height: 14px;
+  background: #ffc85c;
+  box-shadow: 0 0 0 5px rgba(255, 200, 92, 0.16);
+}
+.shapes-root .shapes-guide__sun {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 10px));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--text);
-  border-color: var(--stroke-strong);
+  white-space: nowrap;
+  pointer-events: none;
 }
-.shapes-root .shapes-cat--on {
-  background: linear-gradient(140deg, var(--accent), var(--accent-2));
-  color: #12141d;
-  border-color: transparent;
+
+.shapes-root .shapes-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.shapes-root .shapes-field__label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.shapes-root .shapes-select {
+  width: 100%;
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  transition: border-color 0.14s ease, background 0.14s ease;
+}
+.shapes-root .shapes-select:hover,
+.shapes-root .shapes-select:focus {
+  border-color: var(--stroke-strong);
+  background: rgba(255, 255, 255, 0.12);
+}
+.shapes-root .shapes-select option {
+  color: #11151d;
 }
 
 /* Sliders --------------------------------------------------------------- */
@@ -138,7 +220,7 @@
   width: 100%;
   height: 5px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.16);
   outline: none;
   cursor: pointer;
 }
@@ -148,7 +230,7 @@
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  background: linear-gradient(140deg, var(--accent), var(--accent-2));
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
   border: 2px solid #12141d;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
@@ -156,92 +238,44 @@
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  background: linear-gradient(140deg, var(--accent), var(--accent-2));
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
   border: 2px solid #12141d;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
-/* Swatches -------------------------------------------------------------- */
-.shapes-root .shapes-swatches {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-}
-.shapes-root .shapes-swatches--wide {
-  grid-template-columns: repeat(6, 1fr);
-}
-.shapes-root .shapes-sw {
-  aspect-ratio: 1;
-  border-radius: 8px;
-  border: 2px solid transparent;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  font-size: 13px;
-}
-.shapes-root .shapes-sw--rainbow {
-  background: conic-gradient(#ff5a5f, #ffb703, #06d6a0, #22d3ee, #8b5cf6, #ff5ce0, #ff5a5f);
-}
-.shapes-root .shapes-sw--on {
-  border-color: #fff;
-  box-shadow: 0 0 0 2px var(--accent);
-}
-
-/* Scene toggles --------------------------------------------------------- */
-.shapes-root .shapes-toggles {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-.shapes-root .shapes-toggle {
-  padding: 9px 8px;
-  border-radius: 10px;
-  border: 1px solid var(--stroke);
-  background: var(--chip);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.14s, color 0.14s, border-color 0.14s;
-}
-.shapes-root .shapes-toggle:hover:not(.shapes-toggle--on) {
-  color: var(--text);
-  border-color: var(--stroke-strong);
-}
-.shapes-root .shapes-toggle--on {
-  background: rgba(139, 92, 246, 0.18);
-  border-color: var(--accent);
-  color: var(--text);
-}
-
-/* Buttons --------------------------------------------------------------- */
-.shapes-root .shapes-btn {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--stroke);
-  background: var(--chip);
-  color: var(--text);
-  font-size: 12.5px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.14s, border-color 0.14s;
-}
-.shapes-root .shapes-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: var(--stroke-strong);
-}
-
 .shapes-root .shapes-foot {
-  margin-top: auto;
-  font-size: 11px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.55;
   color: var(--muted);
+}
+.shapes-root .shapes-readout {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.shapes-root .shapes-readout span {
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  padding: 8px 9px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 .shapes-root .shapes-foot b {
   color: var(--text);
   font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .shapes-root .shapes-panel {
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+    padding: 16px;
+    border-radius: 18px;
+  }
 }

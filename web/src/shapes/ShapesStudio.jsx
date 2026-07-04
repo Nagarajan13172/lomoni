@@ -1,42 +1,43 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import { SceneEnv } from "./scene/SceneEnv";
 import { Lighting } from "./scene/Lighting";
 import { Floor } from "./scene/Floor";
-import { ShapeGallery } from "./scene/ShapeGallery";
-import { useShapes } from "./shapesStore";
+import { Shape } from "./scene/Shape";
+import { ConstructionGuides } from "./scene/ConstructionGuides";
 
-/** The lighting studio: a lit floor, the shape gallery and the movable sun. */
+const BG = "#eef0f3";
+
+/** The lighting studio: one shape, one movable light, and a clean shadow floor. */
 export function ShapesStudio() {
-  const setGL = useShapes((s) => s.setGL);
-  const select = useShapes((s) => s.select);
-
   return (
     <Canvas
       shadows
       dpr={[1, 2]}
       gl={{
         antialias: true,
-        preserveDrawingBuffer: true, // needed for screenshot toDataURL
         toneMapping: THREE.ACESFilmicToneMapping,
       }}
-      camera={{ position: [2.5, 12.5, 27], fov: 42, near: 0.1, far: 200 }}
-      onCreated={({ gl }) => setGL(gl)}
-      onPointerMissed={() => select(null)} // click empty space to deselect
+      camera={{ position: [8, 7, 12], fov: 36, near: 0.1, far: 120 }}
+      onCreated={({ gl, scene }) => {
+        gl.shadowMap.enabled = true;
+        gl.shadowMap.type = THREE.PCFSoftShadowMap;
+        scene.background = new THREE.Color(BG);
+        scene.fog = new THREE.Fog(BG, 18, 42);
+      }}
     >
-      <SceneEnv />
       <Lighting />
       <Floor />
-      <ShapeGallery />
+      <Shape />
+      <ConstructionGuides />
 
       <OrbitControls
         makeDefault
-        target={[2.5, 1.3, 0]}
+        target={[0, 1.6, 0]}
         enableDamping
         dampingFactor={0.08}
-        minDistance={8}
-        maxDistance={70}
+        minDistance={6}
+        maxDistance={26}
         maxPolarAngle={Math.PI * 0.49}
       />
     </Canvas>
