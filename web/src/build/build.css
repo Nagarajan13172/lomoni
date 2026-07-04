@@ -70,6 +70,35 @@
   margin: 2px 0 0;
 }
 
+.build-root .build-modeswitch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--chip);
+  border: 1px solid var(--stroke);
+}
+.build-root .build-mode {
+  padding: 9px 10px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.14s, color 0.14s;
+}
+.build-root .build-mode:hover:not(.build-mode--on) {
+  color: var(--text);
+}
+.build-root .build-mode--on {
+  background: linear-gradient(140deg, var(--accent), var(--accent-2));
+  color: #12141d;
+}
+
 .build-root .build-sec {
   font-size: 11px;
   letter-spacing: 0.05em;

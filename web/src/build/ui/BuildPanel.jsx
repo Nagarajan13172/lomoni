@@ -12,6 +12,8 @@ export function BuildPanel() {
   const undo = useBuild((s) => s.undo);
   const clear = useBuild((s) => s.clear);
   const count = useBuild((s) => s.blocks.length);
+  const mode = useBuild((s) => s.mode);
+  const setMode = useBuild((s) => s.setMode);
 
   return (
     <aside className="build-panel">
@@ -25,7 +27,22 @@ export function BuildPanel() {
         </div>
       </header>
 
-      <section>
+      <div className="build-modeswitch">
+        <button
+          className={"build-mode" + (mode === "place" ? " build-mode--on" : "")}
+          onClick={() => setMode("place")}
+        >
+          🧱 Place
+        </button>
+        <button
+          className={"build-mode" + (mode === "delete" ? " build-mode--on" : "")}
+          onClick={() => setMode("delete")}
+        >
+          🗑 Delete
+        </button>
+      </div>
+
+      <section style={{ opacity: mode === "delete" ? 0.4 : 1, pointerEvents: mode === "delete" ? "none" : "auto" }}>
         <h2 className="build-sec">Brick</h2>
         <div className="build-grid">
           {Object.entries(BRICKS).map(([id, b]) => (
@@ -40,7 +57,7 @@ export function BuildPanel() {
         </div>
       </section>
 
-      <section>
+      <section style={{ opacity: mode === "delete" ? 0.4 : 1, pointerEvents: mode === "delete" ? "none" : "auto" }}>
         <h2 className="build-sec">Colour</h2>
         <div className="build-swatches">
           {COLORS.map((c) => (
@@ -62,7 +79,9 @@ export function BuildPanel() {
       </section>
 
       <footer className="build-foot">
-        Click the baseplate to drop a brick · drag to orbit · scroll to zoom · press <b>R</b> to rotate
+        {mode === "delete"
+          ? "Click a brick to remove it · drag to orbit · scroll to zoom"
+          : "Click to drop a brick · stacks on top of what you point at · drag to orbit · press R to rotate"}
       </footer>
     </aside>
   );

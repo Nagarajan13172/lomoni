@@ -45,11 +45,15 @@ export const useBuild = create((set, get) => ({
   color: DEFAULT_COLOR,
   rot: 0,
   ghost: null, // { gx, gz } the placer is hovering, or null
+  mode: "place", // "place" | "delete"
+  hoverId: null, // brick under the cursor in delete mode
 
   setType: (type) => set({ type }),
   setColor: (color) => set({ color }),
   rotate: () => set((s) => ({ rot: (s.rot + 90) % 360 })),
   setGhost: (ghost) => set({ ghost }),
+  setMode: (mode) => set({ mode, ghost: null, hoverId: null }),
+  setHover: (hoverId) => set({ hoverId }),
 
   /** Resting plate layer for a footprint at (gx,gz): sits on its tallest column. */
   restingY: (gx, gz, type, rot) => {
@@ -80,6 +84,14 @@ export const useBuild = create((set, get) => ({
       columnTop,
     }));
   },
+
+  /** Remove a brick by id and rebuild occupancy/tops from scratch. */
+  remove: (id) =>
+    set((s) => {
+      const blocks = s.blocks.filter((b) => b.id !== id);
+      if (blocks.length === s.blocks.length) return {};
+      return { blocks, history: [...s.history, s.blocks], hoverId: null, ...derive(blocks) };
+    }),
 
   undo: () =>
     set((s) => {

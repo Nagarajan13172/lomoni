@@ -9,7 +9,7 @@ const _dummy = new THREE.Object3D();
  * baked into the footprint (fw/fd already swapped), so a plain brick needs no
  * mesh rotation — the studs and box just use the rotated dimensions.
  */
-export function Brick({ block, ghost = false }) {
+export function Brick({ block, ghost = false, hovered = false }) {
   const { type, rot, color } = block;
   const { fw, fd } = footprint(type, rot);
   const plates = BRICKS[type].plates;
@@ -43,10 +43,13 @@ export function Brick({ block, ghost = false }) {
     transparent: ghost,
     opacity,
     depthWrite: !ghost,
+    // Delete-mode hover: glow the brick red so it's clear what will be removed.
+    emissive: hovered ? "#ff2e4d" : "#000000",
+    emissiveIntensity: hovered ? 0.55 : 0,
   };
 
   return (
-    <group position={pos}>
+    <group position={pos} userData={{ blockId: block.id }}>
       <mesh castShadow={!ghost} receiveShadow={!ghost}>
         <boxGeometry args={[w, h, d]} />
         <meshStandardMaterial {...matProps} />

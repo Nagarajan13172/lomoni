@@ -7,8 +7,9 @@ export function GhostBrick() {
   const type = useBuild((s) => s.type);
   const rot = useBuild((s) => s.rot);
   const color = useBuild((s) => s.color);
+  const mode = useBuild((s) => s.mode);
   const restingY = useBuild((s) => s.restingY);
-  if (!ghost) return null;
+  if (!ghost || mode === "delete") return null;
   const gy = restingY(ghost.gx, ghost.gz, type, rot);
   return (
     <Brick

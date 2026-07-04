@@ -1,18 +1,32 @@
 import { useEffect, useRef } from "react";
 import { useBuild } from "../buildStore";
-import { BASEPLATE, STUD, footprint, worldToCol } from "../bricks";
+import { BASEPLATE, footprint, worldToCol } from "../bricks";
 
-const SIZE = BASEPLATE * STUD;
+/** Walk up from a hit object to the brick group carrying a blockId. */
+function blockIdOf(obj) {
+  let o = obj;
+  while (o) {
+    if (o.userData && o.userData.blockId) return o.userData.blockId;
+    o = o.parent;
+  }
+  return null;
+}
 
 /**
- * An invisible ground plane that catches the cursor: on move it snaps to a stud
- * column and updates the ghost; on a click (not an orbit drag) it drops a brick.
- * Press R to rotate. The brick's resting height comes from the store, so hovering
- * over a stack shows the ghost on top.
+ * Wraps the interactive scene (baseplate + bricks). R3F events bubble from the
+ * hit mesh up to this group, so `e.point` sits on the ACTUAL surface under the
+ * cursor — the top of the brick you're pointing at, not a flat ground plane.
+ * That makes stacking pixel-accurate at any camera angle.
+ *
+ * Place mode: click drops a brick (resting on whatever's under the cursor).
+ * Delete mode: hover highlights a brick, click removes it. A drag (orbit) never
+ * places/deletes thanks to the pointer-move threshold.
  */
-export function Placer() {
+export function Placer({ children }) {
   const setGhost = useBuild((s) => s.setGhost);
+  const setHover = useBuild((s) => s.setHover);
   const place = useBuild((s) => s.place);
+  const remove = useBuild((s) => s.remove);
   const rotate = useBuild((s) => s.rotate);
   const down = useRef(null);
 
@@ -34,10 +48,20 @@ export function Placer() {
   };
 
   return (
-    <mesh
-      rotation={[-Math.PI / 2, 0, 0]}
-      onPointerMove={(e) => setGhost(cellFrom(e.point))}
-      onPointerLeave={() => setGhost(null)}
+    <group
+      onPointerMove={(e) => {
+        e.stopPropagation();
+        if (useBuild.getState().mode === "delete") {
+          setHover(blockIdOf(e.object));
+          setGhost(null);
+        } else {
+          setGhost(cellFrom(e.point));
+        }
+      }}
+      onPointerLeave={() => {
+        setGhost(null);
+        setHover(null);
+      }}
       onPointerDown={(e) =>
         (down.current = { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY })
       }
@@ -47,13 +71,17 @@ export function Placer() {
         if (!d) return;
         const dx = e.nativeEvent.clientX - d.x;
         const dy = e.nativeEvent.clientY - d.y;
-        if (dx * dx + dy * dy > 36) return; // dragged to orbit → don't place
-        const c = cellFrom(e.point);
-        place(c.gx, c.gz);
+        if (dx * dx + dy * dy > 36) return; // dragged to orbit → ignore
+        if (useBuild.getState().mode === "delete") {
+          const id = blockIdOf(e.object);
+          if (id) remove(id);
+        } else {
+          const c = cellFrom(e.point);
+          place(c.gx, c.gz);
+        }
       }}
     >
-      <planeGeometry args={[SIZE, SIZE]} />
-      <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-    </mesh>
+      {children}
+    </group>
   );
 }

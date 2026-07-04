@@ -37,10 +37,11 @@ export function BuildStudio() {
         <orthographicCamera attach="shadow-camera" args={[-22, 22, 22, -22, 0.1, 70]} />
       </directionalLight>
 
-      <Baseplate />
-      <Bricks />
+      <Placer>
+        <Baseplate />
+        <Bricks />
+      </Placer>
       <GhostBrick />
-      <Placer />
 
       <ContactShadows position={[0, -0.02, 0]} opacity={0.3} scale={40} blur={2.2} far={12} />
 
