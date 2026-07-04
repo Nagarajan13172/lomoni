@@ -9,8 +9,9 @@ import WhoWeAre from "./pages/WhoWeAre";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
-// Code-split the 3D pose studio: three.js only loads when you open /studio.
+// Code-split the 3D tools: three.js only loads when you open /studio or /build.
 const PoseStudio = lazy(() => import("./pages/PoseStudio"));
+const Build = lazy(() => import("./pages/Build"));
 import VariationsIndex from "./variations/VariationsIndex";
 import V1 from "./variations/V1";
 import V2 from "./variations/V2";
@@ -38,6 +39,14 @@ export default function App() {
           element={
             <Suspense fallback={<div className="min-h-[60vh]" />}>
               <PoseStudio />
+            </Suspense>
+          }
+        />
+        <Route
+          path="build"
+          element={
+            <Suspense fallback={<div className="min-h-[60vh]" />}>
+              <Build />
             </Suspense>
           }
         />

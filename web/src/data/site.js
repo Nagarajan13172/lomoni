@@ -28,6 +28,7 @@ export const nav = [
   { label: "Road To D-School", to: "/r-2-d" },
   { label: "Courses", to: "/courses" },
   { label: "Pose Studio", to: "/studio" },
+  { label: "Build", to: "/build" },
   { label: "Who We Are", to: "/who-we-are" },
   { label: "Contact", to: "/contact" },
 ];

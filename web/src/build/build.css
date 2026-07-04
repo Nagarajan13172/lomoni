@@ -1,0 +1,156 @@
+/* Block-builder styles — all scoped under .build-root so they can't leak into
+   the surrounding Tailwind site. Mirrors the pose studio's layout. */
+.build-root {
+  --text: #e7ecff;
+  --muted: #8b93ad;
+  --stroke: rgba(255, 255, 255, 0.1);
+  --stroke-strong: rgba(255, 255, 255, 0.2);
+  --chip: rgba(255, 255, 255, 0.06);
+  --accent: #ff2e88;
+  --accent-2: #ffc23c;
+  --font: "DM Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+
+  position: relative;
+  width: 100%;
+  height: calc(100dvh - 68px); /* fill under the fixed 68px navbar */
+  min-height: 520px;
+  font-family: var(--font);
+  color: var(--text);
+  overflow: hidden;
+}
+.build-root .build-stage {
+  position: absolute;
+  inset: 0;
+}
+.build-root .build-stage canvas {
+  touch-action: none;
+}
+
+.build-root .build-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: 288px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  overflow-y: auto;
+  background: rgba(18, 20, 28, 0.9);
+  border: 1px solid var(--stroke);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+}
+
+.build-root .build-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.build-root .build-panel__logo {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  border-radius: 12px;
+  background: linear-gradient(140deg, var(--accent), var(--accent-2));
+}
+.build-root .build-panel__title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+.build-root .build-panel__sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+
+.build-root .build-sec {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.build-root .build-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+.build-root .build-chip {
+  padding: 9px 4px;
+  border-radius: 10px;
+  border: 1px solid var(--stroke);
+  background: var(--chip);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.14s, border-color 0.14s;
+}
+.build-root .build-chip:hover {
+  border-color: var(--stroke-strong);
+}
+.build-root .build-chip--on {
+  background: linear-gradient(140deg, var(--accent), var(--accent-2));
+  color: #12141d;
+  border-color: transparent;
+}
+
+.build-root .build-swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+.build-root .build-sw {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  padding: 0;
+}
+.build-root .build-sw--on {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.build-root .build-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.build-root .build-btn {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--stroke);
+  background: var(--chip);
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.14s, border-color 0.14s;
+}
+.build-root .build-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--stroke-strong);
+}
+.build-root .build-btn--danger:hover {
+  border-color: #ff5c7a;
+  color: #ff5c7a;
+}
+
+.build-root .build-foot {
+  margin-top: auto;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
