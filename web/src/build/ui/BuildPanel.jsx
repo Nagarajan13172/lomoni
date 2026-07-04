@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useBuild } from "../buildStore";
 import { BRICKS, COLORS, PIECE_CATEGORIES } from "../bricks";
+import { encodeShare, toFile, fromFile } from "../persist";
 
 /** Palette + colours + actions for the block builder. */
 export function BuildPanel() {
@@ -24,6 +25,59 @@ export function BuildPanel() {
   const count = useBuild((s) => s.blocks.length);
   const mode = useBuild((s) => s.mode);
   const setMode = useBuild((s) => s.setMode);
+  const load = useBuild((s) => s.load);
+
+  const fileRef = useRef(null);
+  const [note, setNote] = useState("");
+  const flash = (m) => {
+    setNote(m);
+    setTimeout(() => setNote(""), 1800);
+  };
+
+  const screenshot = () => {
+    const gl = useBuild.getState().gl;
+    if (!gl) return;
+    const a = document.createElement("a");
+    a.href = gl.domElement.toDataURL("image/png");
+    a.download = "my-build.png";
+    a.click();
+  };
+
+  const share = async () => {
+    const enc = encodeShare(useBuild.getState().blocks);
+    const url = `${location.origin}${location.pathname}#b=${enc}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      flash("Link copied!");
+    } catch {
+      flash("Copy failed");
+    }
+  };
+
+  const exportFile = () => {
+    const blob = new Blob([toFile(useBuild.getState().blocks)], { type: "application/json" });
+    const u = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = u;
+    a.download = "my-build.json";
+    a.click();
+    URL.revokeObjectURL(u);
+  };
+
+  const onImport = (e) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      const blocks = fromFile(r.result);
+      if (blocks) {
+        load(blocks);
+        flash("Loaded!");
+      } else flash("Bad file");
+    };
+    r.readAsText(f);
+  };
 
   return (
     <aside className="build-panel">
@@ -99,6 +153,25 @@ export function BuildPanel() {
         <button className="build-btn" onClick={rotate}>⟳ Rotate ({rot}°)</button>
         <button className="build-btn" onClick={undo}>↶ Undo</button>
         <button className="build-btn build-btn--danger" onClick={clear}>🗑 Clear all</button>
+      </section>
+
+      <section className="build-actions">
+        <h2 className="build-sec">Save &amp; share</h2>
+        <button className="build-btn" onClick={share}>🔗 Copy share link</button>
+        <button className="build-btn" onClick={screenshot}>📷 Screenshot</button>
+        <div className="build-row">
+          <button className="build-btn" onClick={exportFile}>⬇ Export</button>
+          <button className="build-btn" onClick={() => fileRef.current?.click()}>⬆ Import</button>
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/json,.json"
+          onChange={onImport}
+          style={{ display: "none" }}
+        />
+        {note && <div className="build-note">{note}</div>}
+        <p className="build-hint">Your build auto-saves — it'll be here when you come back.</p>
       </section>
 
       <footer className="build-foot">

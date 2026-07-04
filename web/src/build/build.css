@@ -205,6 +205,27 @@
   color: #ff5c7a;
 }
 
+.build-root .build-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.build-root .build-note {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #12141d;
+  background: linear-gradient(140deg, var(--accent), var(--accent-2));
+  border-radius: 8px;
+  padding: 6px;
+}
+.build-root .build-hint {
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+
 .build-root .build-foot {
   margin-top: auto;
   font-size: 11px;

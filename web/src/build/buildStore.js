@@ -1,11 +1,13 @@
 import { create } from "zustand";
 import { BRICKS, footprint, DEFAULT_TYPE, DEFAULT_COLOR } from "./bricks";
+import { initialBlocks, saveLocal } from "./persist";
 
 const ck = (x, y, z) => x + "," + y + "," + z;
 const colk = (x, z) => x + "," + z;
 
 let _id = 0;
 const nextId = () => "b" + ++_id;
+const withIds = (blocks) => blocks.map((b) => ({ ...b, id: nextId() }));
 
 /** Plate-resolution cells a block fills (for exact overlap checks). */
 function cellsOf(b) {
@@ -35,10 +37,14 @@ function derive(blocks) {
   return { occupancy, columnTop };
 }
 
+// Restore the last build (a shared #b=… link wins, else localStorage).
+const _initial = withIds(initialBlocks());
+const _initialDerived = derive(_initial);
+
 export const useBuild = create((set, get) => ({
-  blocks: [],
-  occupancy: new Set(), // occupied plate-cells
-  columnTop: new Map(), // "gx,gz" -> next free plate layer
+  blocks: _initial,
+  occupancy: _initialDerived.occupancy, // occupied plate-cells
+  columnTop: _initialDerived.columnTop, // "gx,gz" -> next free plate layer
   history: [], // block-array snapshots for undo
 
   type: DEFAULT_TYPE,
@@ -47,6 +53,7 @@ export const useBuild = create((set, get) => ({
   ghost: null, // { gx, gz } the placer is hovering, or null
   mode: "place", // "place" | "delete"
   hoverId: null, // brick under the cursor in delete mode
+  gl: null, // renderer, captured for screenshots
 
   setType: (type) => set({ type }),
   setColor: (color) => set({ color }),
@@ -54,6 +61,13 @@ export const useBuild = create((set, get) => ({
   setGhost: (ghost) => set({ ghost }),
   setMode: (mode) => set({ mode, ghost: null, hoverId: null }),
   setHover: (hoverId) => set({ hoverId }),
+  setGL: (gl) => set({ gl }),
+
+  /** Replace the whole build (from an imported file or a shared link). */
+  load: (blocks) => {
+    const b = withIds(blocks || []);
+    set({ blocks: b, history: [], ghost: null, hoverId: null, ...derive(b) });
+  },
 
   /** Resting plate layer for a footprint at (gx,gz): sits on its tallest column. */
   restingY: (gx, gz, type, rot) => {
@@ -107,3 +121,13 @@ export const useBuild = create((set, get) => ({
         : {}
     ),
 }));
+
+// Auto-save to localStorage whenever the set of placed blocks changes, so a
+// build survives a page reload without any explicit "save".
+let _lastBlocks = useBuild.getState().blocks;
+useBuild.subscribe((state) => {
+  if (state.blocks !== _lastBlocks) {
+    _lastBlocks = state.blocks;
+    saveLocal(state.blocks);
+  }
+});

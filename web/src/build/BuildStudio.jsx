@@ -5,22 +5,25 @@ import { Baseplate } from "./scene/Baseplate";
 import { Bricks } from "./scene/Bricks";
 import { GhostBrick } from "./scene/GhostBrick";
 import { Placer } from "./scene/Placer";
+import { useBuild } from "./buildStore";
 
 const BG = "#e9edf2";
 
 /** The block-builder canvas: lit studio, baseplate, placed bricks + ghost. */
 export function BuildStudio() {
+  const setGL = useBuild((s) => s.setGL);
   return (
     <Canvas
       shadows
       dpr={[1, 2]}
       gl={{
         antialias: true,
-        preserveDrawingBuffer: true,
+        preserveDrawingBuffer: true, // needed for screenshot toDataURL
         toneMapping: THREE.ACESFilmicToneMapping,
       }}
       camera={{ position: [16, 17, 22], fov: 40, near: 0.1, far: 200 }}
-      onCreated={({ scene }) => {
+      onCreated={({ scene, gl }) => {
+        setGL(gl);
         scene.background = new THREE.Color(BG);
         scene.fog = new THREE.Fog(BG, 45, 90);
       }}
