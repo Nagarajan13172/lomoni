@@ -12,6 +12,13 @@ export function PoseLibrary() {
   const [cat, setCat] = useState(POSE_CATEGORIES[0]);
   const [q, setQ] = useState("");
 
+  // Per-category pose counts, shown as a badge inside each dropdown option.
+  const countByCat = useMemo(() => {
+    const m = {};
+    for (const p of POSE_LIBRARY) m[p.category] = (m[p.category] || 0) + 1;
+    return m;
+  }, []);
+
   const apply = (p) => {
     setActivePose(p.id);
     queuePose(p.renderPose || p.pose, { additive: true });
@@ -40,17 +47,18 @@ export function PoseLibrary() {
       />
 
       {!q && (
-        <div className="cats">
+        <select
+          className="cat-select"
+          value={cat}
+          onChange={(e) => setCat(e.target.value)}
+          aria-label="Pose category"
+        >
           {POSE_CATEGORIES.map((c) => (
-            <button
-              key={c}
-              className={"cat" + (c === cat ? " cat--active" : "")}
-              onClick={() => setCat(c)}
-            >
-              {c}
-            </button>
+            <option key={c} value={c}>
+              {c} ({countByCat[c]})
+            </option>
           ))}
-        </div>
+        </select>
       )}
 
       <div className="poselib__grid">

@@ -55,13 +55,20 @@ export const useStore = create((set, get) => ({
   characterId: DEFAULT_CHARACTER_ID,
   corrections: null,
   characterReport: null, // { matched, missing, total } from the last retarget
-  setCharacter: (id) => set({ characterId: id, ready: false }),
+  // Pose carried across a character swap so switching models keeps the pose
+  // instead of snapping back to rest. Captured in SOURCE frame (see
+  // getSourcePose) and re-applied by <Mannequin> once the new rig is ready.
+  pendingPose: null,
+  setCharacter: (id) => {
+    if (id === get().characterId) return;
+    set({ characterId: id, ready: false, pendingPose: get().getSourcePose() });
+  },
   setCorrections: (corrections, characterReport = null) =>
     set({ corrections, characterReport }),
 
   selected: null, // joint name currently being edited
   activePoseId: null, // id of the currently-applied library pose (for highlight)
-  showHandles: true, // joint dots visible so you can click + pose
+  showHandles: false, // joint dots hidden by default (toggle on to click + pose)
   gl: null, // renderer, captured for screenshots
   poseVersion: 0, // bump to notify the DOM that bones moved (presets, reset...)
   theme: "dark", // "dark" | "light" | "blueprint" — see themes.js
@@ -143,6 +150,33 @@ export const useStore = create((set, get) => ({
       if (b) pose[j.name] = [b.rotation.x, b.rotation.y, b.rotation.z];
     }
     return pose;
+  },
+
+  /**
+   * Read the current pose as SOURCE-frame additive offsets { name: [x,y,z] } —
+   * the character-independent form. Inverts each bone's rest and retarget
+   * correction so the pose can be re-applied to ANY character (used to keep a
+   * pose alive across a character swap). Returns null if the figure is at rest.
+   */
+  getSourcePose: () => {
+    const { bones, rest, corrections } = get();
+    const pose = {};
+    let any = false;
+    for (const j of JOINTS) {
+      const b = bones[j.name];
+      const r = rest[j.name];
+      if (!b || !r) continue;
+      // Δ_tgt = rest⁻¹ · q ; Δ_src = C⁻¹ · Δ_tgt · C (inverse of the correction)
+      const dTgt = r.clone().invert().multiply(b.quaternion);
+      const C = corrections?.[j.name];
+      const dSrc = C ? C.clone().invert().multiply(dTgt).multiply(C) : dTgt;
+      _euler.setFromQuaternion(dSrc, "XYZ");
+      if (Math.abs(_euler.x) + Math.abs(_euler.y) + Math.abs(_euler.z) > 1e-4) {
+        pose[j.name] = [_euler.x, _euler.y, _euler.z];
+        any = true;
+      }
+    }
+    return any ? pose : null;
   },
 
   /** Apply a { name: [x, y, z] } pose. Missing joints are left untouched. */

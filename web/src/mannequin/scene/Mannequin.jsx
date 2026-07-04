@@ -6,7 +6,7 @@ import { useStore } from "../store";
 import { getTheme } from "./themes";
 import { getMaterial } from "./materials";
 import { CHARACTERS_BY_ID, DEFAULT_CHARACTER_ID } from "../character/characters";
-import { buildNativeRig, buildRetargetRig } from "../character/retarget";
+import { buildNativeRig, buildRetargetRig, stripJointBalls } from "../character/retarget";
 
 const DEFAULT_MODEL_URL = CHARACTERS_BY_ID[DEFAULT_CHARACTER_ID].url;
 const TARGET_HEIGHT = 3; // world units
@@ -64,6 +64,16 @@ function CharacterRig({ model, character, ...props }) {
     });
     return arr;
   }, [model]);
+
+  // Remove selected joint balls (e.g. the knee balls) from a character's ball-
+  // joint accent mesh (Mixamo's *Joints* layer), keeping every other joint.
+  useLayoutEffect(() => {
+    const suffixes = character.removeJointBalls;
+    if (!suffixes?.length) return;
+    for (const o of meshes) {
+      if (o.isSkinnedMesh && /joint/i.test(o.name)) stripJointBalls(o, suffixes);
+    }
+  }, [meshes, character.removeJointBalls]);
 
   // Contact points for grounding/framing (from the active rig): joint bones plus
   // "_end" tips (native), or the primary skeleton's bones (imports). Their world
@@ -242,6 +252,13 @@ function CharacterRig({ model, character, ...props }) {
         `[character] "${character.name}": unmapped bones →`,
         rig.report.missing.join(", ")
       );
+    }
+    // Carry a pose across a character swap: re-apply it (retargeted to this new
+    // rig) instead of snapping back to rest, then clear it.
+    const pending = useStore.getState().pendingPose;
+    if (pending) {
+      useStore.getState().applyPose(pending, { additive: true });
+      useStore.setState({ pendingPose: null });
     }
   }, [bones, rig, setRig, setCorrections, character.name]);
 

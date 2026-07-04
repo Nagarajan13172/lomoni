@@ -72,6 +72,11 @@ export const CHARACTERS = [
     icon: "🧍",
     source: "mixamo",
     retarget: MIXAMO_PROFILE,
+    // Remove ONLY the ankle/foot ball-joints from the Beta_Joints accent mesh;
+    // every other joint ball (knees, hips, elbows, wrists…) is kept. Bone
+    // suffixes "LeftFoot"/"RightFoot" are Mixamo's ANKLE bones (the ankle ball
+    // sits at their origin, ~0–12 cm off the floor).
+    removeJointBalls: ["LeftFoot", "RightFoot"],
   },
 
   // ── Add more the same way — drop a .glb or .fbx in public/models/ and copy

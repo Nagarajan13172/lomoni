@@ -134,3 +134,49 @@ export function buildNativeRig(root) {
   });
   return { bones, corrections: null, report: null, contacts };
 }
+
+/**
+ * Surgically remove the joint-ball geometry weighted to specific bones from a
+ * skinned mesh — e.g. drop ONLY the knee balls (LeftLeg/RightLeg) from Mixamo's
+ * Beta_Joints accent layer while keeping every other ball. Rebuilds the triangle
+ * index, dropping any triangle that touches a vertex whose dominant skin weight
+ * is one of `boneSuffixes`. Idempotent (guarded per mesh); leaves the vertex
+ * buffers untouched so nothing else is disturbed.
+ */
+export function stripJointBalls(mesh, boneSuffixes) {
+  const geo = mesh.geometry;
+  const si = geo?.attributes?.skinIndex;
+  const sw = geo?.attributes?.skinWeight;
+  if (!si || !sw || !mesh.skeleton || mesh.userData._ballsStripped) return;
+
+  const kill = new Set();
+  mesh.skeleton.bones.forEach((b, i) => {
+    if (boneSuffixes.some((n) => b.name.endsWith(n))) kill.add(i);
+  });
+  if (!kill.size) return;
+
+  const dominant = (v) => {
+    const idx = [si.getX(v), si.getY(v), si.getZ(v), si.getW(v)];
+    const wt = [sw.getX(v), sw.getY(v), sw.getZ(v), sw.getW(v)];
+    let b = 0;
+    for (let k = 1; k < 4; k++) if (wt[k] > wt[b]) b = k;
+    return idx[b];
+  };
+  const marked = new Uint8Array(si.count);
+  for (let v = 0; v < si.count; v++) if (kill.has(dominant(v))) marked[v] = 1;
+
+  const keep = [];
+  const index = geo.index;
+  if (index) {
+    for (let t = 0; t < index.count; t += 3) {
+      const a = index.getX(t), b = index.getX(t + 1), c = index.getX(t + 2);
+      if (!(marked[a] || marked[b] || marked[c])) keep.push(a, b, c);
+    }
+  } else {
+    for (let v = 0; v < si.count; v += 3) {
+      if (!(marked[v] || marked[v + 1] || marked[v + 2])) keep.push(v, v + 1, v + 2);
+    }
+  }
+  geo.setIndex(keep);
+  mesh.userData._ballsStripped = true;
+}
