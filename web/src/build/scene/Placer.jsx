@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 import { useBuild } from "../buildStore";
 import { BASEPLATE, footprint, worldToCol } from "../bricks";
+import { playPlace, playRemove, playPick } from "../sound";
+
+const sfx = (fn) => {
+  if (!useBuild.getState().muted) fn();
+};
 
 /** Walk up from a hit object to the brick group carrying a blockId. */
 function blockIdOf(obj) {
@@ -79,18 +84,26 @@ export function Placer({ children }) {
         const s = useBuild.getState();
         if (s.mode === "delete") {
           const id = blockIdOf(e.object);
-          if (id) remove(id);
+          if (id) {
+            remove(id);
+            sfx(playRemove);
+          }
         } else if (s.mode === "move") {
           if (s.carried) {
             const c = cellFrom(e.point);
             s.dropCarried(c.gx, c.gz);
+            sfx(playPlace);
           } else {
             const id = blockIdOf(e.object);
-            if (id) s.pickUp(id);
+            if (id) {
+              s.pickUp(id);
+              sfx(playPick);
+            }
           }
         } else {
           const c = cellFrom(e.point);
           place(c.gx, c.gz);
+          sfx(playPlace);
         }
       }}
     >

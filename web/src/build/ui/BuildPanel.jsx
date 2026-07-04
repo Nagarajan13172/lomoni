@@ -26,6 +26,8 @@ export function BuildPanel() {
   const mode = useBuild((s) => s.mode);
   const setMode = useBuild((s) => s.setMode);
   const load = useBuild((s) => s.load);
+  const muted = useBuild((s) => s.muted);
+  const toggleMute = useBuild((s) => s.toggleMute);
 
   const fileRef = useRef(null);
   const [note, setNote] = useState("");
@@ -83,12 +85,20 @@ export function BuildPanel() {
     <aside className="build-panel">
       <header className="build-panel__head">
         <div className="build-panel__logo">🧱</div>
-        <div>
+        <div style={{ flex: 1 }}>
           <h1 className="build-panel__title">Brick Builder</h1>
           <p className="build-panel__sub">
             {count} brick{count === 1 ? "" : "s"} placed
           </p>
         </div>
+        <button
+          className="build-mute"
+          onClick={toggleMute}
+          title={muted ? "Unmute" : "Mute"}
+          aria-label={muted ? "Unmute" : "Mute"}
+        >
+          {muted ? "🔇" : "🔊"}
+        </button>
       </header>
 
       <div className="build-modeswitch build-modeswitch--3">

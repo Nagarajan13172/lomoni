@@ -1,6 +1,7 @@
 import { Loader } from "@react-three/drei";
 import { BuildStudio } from "../build/BuildStudio";
 import { BuildPanel } from "../build/ui/BuildPanel";
+import { BuildHint } from "../build/ui/BuildHint";
 import "../build/build.css";
 
 /**
@@ -12,6 +13,7 @@ export default function Build() {
     <div className="build-root">
       <div className="build-stage">
         <BuildStudio />
+        <BuildHint />
       </div>
       <BuildPanel />
       <Loader

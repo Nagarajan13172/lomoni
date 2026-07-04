@@ -72,6 +72,8 @@ export const useBuild = create((set, get) => ({
   },
   setHover: (hoverId) => set({ hoverId }),
   setGL: (gl) => set({ gl }),
+  muted: false,
+  toggleMute: () => set((s) => ({ muted: !s.muted })),
 
   /** Replace the whole build (from an imported file or a shared link). */
   load: (blocks) => {

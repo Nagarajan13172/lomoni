@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import { BRICKS, STUD, PLATE, STUD_R, STUD_H, footprint, blockWorld } from "../bricks";
 
@@ -19,6 +20,26 @@ export function Brick({ block, ghost = false, highlight = null }) {
   const count = fw * fd;
   const pos = blockWorld(block);
   const studs = useRef();
+  const grp = useRef();
+
+  // Placed bricks "pop" in with a quick scale spring (skipped for the ghost).
+  useEffect(() => {
+    if (ghost) return;
+    const g = grp.current;
+    if (!g) return;
+    let raf, start;
+    const dur = 190;
+    const tick = (ts) => {
+      if (start == null) start = ts;
+      const p = Math.min(1, (ts - start) / dur);
+      const e = 1 - Math.pow(1 - p, 3); // easeOutCubic + a little overshoot
+      g.scale.setScalar(0.6 + 0.4 * e + Math.sin(p * Math.PI) * 0.08);
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else g.scale.setScalar(1);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [ghost]);
 
   useLayoutEffect(() => {
     const m = studs.current;
@@ -50,12 +71,19 @@ export function Brick({ block, ghost = false, highlight = null }) {
     emissiveIntensity: highlight ? 0.55 : 0,
   };
 
+  const radius = Math.min(0.06, h / 2 - 0.001, STUD * 0.12);
   return (
-    <group position={pos} userData={{ blockId: block.id }}>
-      <mesh castShadow={!ghost} receiveShadow={!ghost}>
-        <boxGeometry args={[w, h, d]} />
+    <group ref={grp} position={pos} userData={{ blockId: block.id }}>
+      <RoundedBox
+        args={[w, h, d]}
+        radius={radius}
+        smoothness={3}
+        creaseAngle={0.5}
+        castShadow={!ghost}
+        receiveShadow={!ghost}
+      >
         <meshStandardMaterial {...matProps} />
-      </mesh>
+      </RoundedBox>
       {hasStuds && (
         <instancedMesh
           key={fw + "x" + fd}
