@@ -7,13 +7,13 @@ import SmoothScroll from "./SmoothScroll";
 export default function Layout() {
   const { pathname } = useLocation();
 
-  // The pose studio is a full-viewport tool — no footer, no page scroll.
-  const isStudio = pathname === "/studio";
+  // The playground tools are full-viewport — no footer, no page scroll.
+  const isTool = pathname.startsWith("/playground");
 
   return (
     <div className="flex min-h-dvh flex-col">
       {/* Momentum scroll for the whole site (handles scroll-to-top on nav too) */}
-      <SmoothScroll disabled={isStudio} />
+      <SmoothScroll disabled={isTool} />
       <div className="grain" aria-hidden="true" />
       <Navbar />
       <motion.main
@@ -25,7 +25,7 @@ export default function Layout() {
       >
         <Outlet />
       </motion.main>
-      {!isStudio && <Footer />}
+      {!isTool && <Footer />}
     </div>
   );
 }

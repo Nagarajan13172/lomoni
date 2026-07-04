@@ -79,6 +79,28 @@
     padding: 18px 18px 14px;
     border-bottom: 1px solid var(--stroke);
   }
+  /* Close (✕) button lives at the top-right end of the panel header. */
+  .panel__close {
+    margin-left: auto;
+    align-self: flex-start;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    border: 1px solid var(--stroke);
+    background: var(--chip);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .panel__close:hover {
+    background: var(--panel-solid);
+    border-color: var(--stroke-strong);
+  }
   .panel__logo {
     width: 42px;
     height: 42px;

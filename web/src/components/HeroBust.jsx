@@ -5,8 +5,10 @@ import * as THREE from "three";
 
 const MODEL_URL = "/models/paper-bust.glb";
 const DRACO_PATH = "/draco/";
+// Default facing for the paper busts, which load in profile (face down +X).
+const DEFAULT_ROTATION = [0, -Math.PI / 2, 0];
 
-function Bust({ src }) {
+function Bust({ src, rotation }) {
   const { scene } = useGLTF(src, DRACO_PATH);
 
   // Centre the model at the origin, size it down, and give it a soft, paper-like
@@ -34,11 +36,12 @@ function Bust({ src }) {
     const wrap = new THREE.Group();
     wrap.add(s);
     wrap.scale.setScalar(1.55 / (size.y || 1));
-    // Model's face points down +X by default (loads in profile) — turn it to
-    // face the camera straight-on for the initial load.
-    wrap.rotation.y = -Math.PI / 2;
+    // Each source model loads facing a different way; `rotation` turns it to
+    // face the camera straight-on for the initial load (the user can then spin
+    // it with OrbitControls).
+    wrap.rotation.set(rotation[0], rotation[1], rotation[2]);
     return wrap;
-  }, [scene]);
+  }, [scene, rotation]);
 
   return <primitive object={model} />;
 }
@@ -54,7 +57,7 @@ function StudioEnv() {
   );
 }
 
-export default function HeroBust({ className = "", src = MODEL_URL }) {
+export default function HeroBust({ className = "", src = MODEL_URL, rotation = DEFAULT_ROTATION }) {
   const wrapRef = useRef(null);
   const [active, setActive] = useState(true);
   // Drag-to-rotate is a mouse interaction; disable on touch so a swipe over the
@@ -102,7 +105,7 @@ export default function HeroBust({ className = "", src = MODEL_URL }) {
         <directionalLight position={[-4, 2, -3]} intensity={0.5} color="#dbe4ff" />
         <Suspense fallback={null}>
           <StudioEnv />
-          <Bust src={src} />
+          <Bust src={src} rotation={rotation} />
         </Suspense>
         {canDrag && (
           <OrbitControls

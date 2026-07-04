@@ -38,13 +38,18 @@ export function ControlPanel() {
 
   return (
     <>
-      <button
-        className={"panel-toggle" + (open ? "" : " panel-toggle--closed")}
-        onClick={() => setOpen((o) => !o)}
-        aria-label="Toggle controls"
-      >
-        {open ? "✕" : "☰"}
-      </button>
+      {/* Floating re-open button — only shown when the panel is collapsed, so
+          there's still a way back once the close (✕) button has slid off with
+          the panel. */}
+      {!open && (
+        <button
+          className="panel-toggle panel-toggle--closed"
+          onClick={() => setOpen(true)}
+          aria-label="Open controls"
+        >
+          ☰
+        </button>
+      )}
 
       <aside className={"panel" + (open ? "" : " panel--closed")}>
         <header className="panel__brand">
@@ -55,6 +60,13 @@ export function ControlPanel() {
               {ready ? "Pose studio · React Three Fiber" : "Loading rig…"}
             </p>
           </div>
+          <button
+            className="panel__close"
+            onClick={() => setOpen(false)}
+            aria-label="Close controls"
+          >
+            ✕
+          </button>
         </header>
 
         <div className="panel__scroll">
