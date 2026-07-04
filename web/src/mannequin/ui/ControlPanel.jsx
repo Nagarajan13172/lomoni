@@ -13,8 +13,19 @@ export function ControlPanel() {
   const resetAll = useStore((s) => s.resetAll);
   const mirror = useStore((s) => s.mirror);
   const randomize = useStore((s) => s.randomize);
+  const setShowHandles = useStore((s) => s.setShowHandles);
+  const select = useStore((s) => s.select);
   const gl = useStore((s) => s.gl);
   const [open, setOpen] = useState(true);
+  const [mode, setModeState] = useState("poses"); // "poses" | "customize"
+
+  // The mode toggle IS the on-character grab-dots switch: Customize shows the
+  // dots + gizmo; Poses hides them and drops any joint selection.
+  const setMode = (m) => {
+    setModeState(m);
+    setShowHandles(m === "customize");
+    if (m !== "customize") select(null);
+  };
 
   const screenshot = () => {
     if (!gl) return;
@@ -51,17 +62,38 @@ export function ControlPanel() {
             <CharacterLibrary />
           </AccordionSection>
 
-          <AccordionSection title="Pose library" icon="🧍" badge={POSE_LIBRARY.length}>
-            <PoseLibrary />
-          </AccordionSection>
+          {/* Mode toggle: pick library poses, or customize joints by hand */}
+          <div className="modeswitch">
+            <button
+              className={"modeswitch__btn" + (mode === "poses" ? " modeswitch__btn--on" : "")}
+              onClick={() => setMode("poses")}
+            >
+              🧍 Poses
+            </button>
+            <button
+              className={"modeswitch__btn" + (mode === "customize" ? " modeswitch__btn--on" : "")}
+              disabled={!ready}
+              onClick={() => setMode("customize")}
+            >
+              🎯 Customize
+            </button>
+          </div>
 
-          <AccordionSection title="Quick poses" icon="⚡">
-            <Presets />
-          </AccordionSection>
+          {mode === "poses" ? (
+            <>
+              <AccordionSection title="Pose library" icon="🧍" badge={POSE_LIBRARY.length} defaultOpen>
+                <PoseLibrary />
+              </AccordionSection>
 
-          <AccordionSection title="Customize pose" icon="🎯" defaultOpen>
-            <Customize />
-          </AccordionSection>
+              <AccordionSection title="Quick poses" icon="⚡">
+                <Presets />
+              </AccordionSection>
+            </>
+          ) : (
+            <AccordionSection title="Customize pose" icon="🎯" defaultOpen>
+              <Customize />
+            </AccordionSection>
+          )}
 
           <AccordionSection title="Actions" icon="🛠️">
             <div className="toolbar__grid">

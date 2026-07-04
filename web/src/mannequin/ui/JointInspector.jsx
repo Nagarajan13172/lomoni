@@ -23,6 +23,11 @@ export function JointInspector() {
   // 3D gizmo, presets, mirror, etc. all reflect here too).
   useEffect(() => {
     if (!bone) return;
+    // Switching joints must snap the inputs to the NEW joint immediately and
+    // cancel any in-progress typing — otherwise the boxes keep the previous
+    // joint's angles.
+    editing.current = false;
+    setDeg({ x: r2d(bone.rotation.x), y: r2d(bone.rotation.y), z: r2d(bone.rotation.z) });
     let raf;
     let last = { x: NaN, y: NaN, z: NaN };
     const tick = () => {
