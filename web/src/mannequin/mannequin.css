@@ -575,6 +575,44 @@
     padding: 12px;
   }
 
+  /* ---------- Characters ---------- */
+  .charlib__warn {
+    margin-top: 9px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    border: 1px solid rgba(240, 170, 60, 0.4);
+    background: rgba(240, 170, 60, 0.1);
+    color: var(--text);
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .charlib__help {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .charlib__help summary {
+    cursor: pointer;
+    color: var(--text);
+    font-weight: 600;
+    padding: 4px 0;
+  }
+  .charlib__help ol {
+    margin: 6px 0 6px 16px;
+    padding: 0;
+  }
+  .charlib__help li {
+    margin: 3px 0;
+  }
+  .charlib__help code {
+    background: var(--chip);
+    border: 1px solid var(--stroke);
+    border-radius: 5px;
+    padding: 0 4px;
+    font-size: 10.5px;
+  }
+
   /* ---------- Material swatches ---------- */
   .swatches {
     display: grid;

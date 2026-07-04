@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useStore } from "../store";
+import { applyBoneCorrection } from "../character/retarget";
 
 const easeInOutCubic = (t) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -26,7 +27,7 @@ export function PoseTweener() {
       tween.current = null;
       return;
     }
-    const { bones, rest } = useStore.getState();
+    const { bones, rest, corrections } = useStore.getState();
     const from = {};
     const to = {};
     for (const name of Object.keys(bones)) {
@@ -38,7 +39,9 @@ export function PoseTweener() {
       if (r) {
         _e.set(r[0], r[1], r[2], "XYZ");
         if (transition.additive) {
-          to[name] = rest[name].clone().multiply(_q.setFromEuler(_e));
+          // retarget the authored offset onto this character (no-op if native)
+          const off = applyBoneCorrection(corrections?.[name], _q.setFromEuler(_e));
+          to[name] = rest[name].clone().multiply(off);
         } else {
           to[name] = new THREE.Quaternion().setFromEuler(_e);
         }

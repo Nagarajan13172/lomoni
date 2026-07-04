@@ -1,41 +1,45 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { useGLTF } from "@react-three/drei";
+import { useGLTF, useFBX } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useStore } from "../store";
 import { getTheme } from "./themes";
 import { getMaterial } from "./materials";
+import { CHARACTERS_BY_ID, DEFAULT_CHARACTER_ID } from "../character/characters";
+import { buildNativeRig, buildRetargetRig } from "../character/retarget";
 
-const MODEL_URL = "/models/lay_figure.glb";
+const DEFAULT_MODEL_URL = CHARACTERS_BY_ID[DEFAULT_CHARACTER_ID].url;
 const TARGET_HEIGHT = 3; // world units
+const D2R = Math.PI / 180;
 // Lifts the figure a hair so the sole rests ON the floor instead of the lowest
 // JOINT pivot (the mesh surface sits ~this far below the ankle/toe bone). World
 // units at figureScale=1; scaled with the figure so the gap stays proportional.
 const GROUND_PAD = 0.05;
 
 /**
- * Loads the rigged wooden mannequin, discovers the skeleton, wires shadows,
- * applies material/display/theme settings, normalises scale, and re-grounds the
- * figure on every pose change so feet/body never float or clip through the floor.
+ * Rigs an already-loaded model (`model`): discovers/remaps the skeleton, wires
+ * shadows, applies material/display/theme settings, normalises scale, and
+ * re-grounds the figure on every pose change so feet/body never float or clip
+ * through the floor. The GLB/FBX loading is done by the thin wrappers below so
+ * the (unconditional) loader hook matches the file format.
  */
-export function Mannequin(props) {
-  const { scene } = useGLTF(MODEL_URL);
+function CharacterRig({ model, character, ...props }) {
+  const isNative = character.source === "native";
+
   const setRig = useStore((s) => s.setRig);
+  const setCorrections = useStore((s) => s.setCorrections);
   const setGroundSnap = useStore((s) => s.setGroundSnap);
   const setGetBounds = useStore((s) => s.setGetBounds);
   const outer = useRef();
 
-  // Use the scene directly (NOT scene.clone): cloning a SkinnedMesh does not
-  // rebind its skeleton to the cloned bones, so posing would silently no-op.
-  const model = scene;
-
-  const bones = useMemo(() => {
-    const map = {};
-    model.traverse((o) => {
-      if (o.isBone) map[o.name] = o;
-    });
-    return map;
-  }, [model]);
+  // Discover the skeleton and (for imports) remap it onto this rig's bone names
+  // plus per-bone rotation corrections so the authored pose library drives it.
+  const rig = useMemo(() => {
+    return character.retarget
+      ? buildRetargetRig(model, character.retarget)
+      : buildNativeRig(model);
+  }, [model, character.retarget]);
+  const bones = rig.bones;
 
   // Cache original maps + collect skinned meshes once.
   const meshes = useMemo(() => {
@@ -61,18 +65,12 @@ export function Mannequin(props) {
     return arr;
   }, [model]);
 
-  // Contact points for grounding/framing: every joint bone plus the "_end" tip
-  // objects (toes, fingertips, head-top). Their world matrices are authoritative
-  // (they drive the GPU skin), unlike a CPU re-skin of the mesh vertices — which
-  // double-applies this GLB's post-bind ancestor scale and drifts the figure off
-  // the floor (worse the further a pose moves from rest). Bones can't lie.
-  const contacts = useMemo(() => {
-    const arr = [];
-    model.traverse((o) => {
-      if (o.isBone || (o.name && o.name.endsWith("_end"))) arr.push(o);
-    });
-    return arr;
-  }, [model]);
+  // Contact points for grounding/framing (from the active rig): joint bones plus
+  // "_end" tips (native), or the primary skeleton's bones (imports). Their world
+  // matrices are authoritative (they drive the GPU skin), unlike a CPU re-skin of
+  // the mesh vertices — which double-applies post-bind ancestor scale and drifts
+  // the figure off the floor. Bones can't lie.
+  const contacts = rig.contacts;
 
   // ---- Settings ----
   const themeId = useStore((s) => s.theme);
@@ -85,7 +83,11 @@ export function Mannequin(props) {
   const hideFigure = useStore((s) => s.hideFigure);
 
   // Material preset / texture / theme → rebuild maps (needsUpdate only here).
+  // Only the native mannequin gets the studio material presets (wood/clay/…);
+  // imported characters keep their own PBR textures so a soldier doesn't render
+  // as a wooden dummy. They still receive shadows + wireframe/opacity toggles.
   useLayoutEffect(() => {
+    if (!isNative) return;
     const theme = getTheme(themeId);
     const preset = getMaterial(materialId);
     const envScale = theme.envMapIntensity / 0.75;
@@ -115,12 +117,13 @@ export function Mannequin(props) {
       mat.side = THREE.FrontSide;
       mat.needsUpdate = true; // map/define set may have changed
     }
-  }, [meshes, themeId, materialId, showTexture]);
+  }, [meshes, themeId, materialId, showTexture, isNative]);
 
-  // Wireframe / opacity → dynamic params only (no shader recompile).
+  // Wireframe / opacity → dynamic params only (no shader recompile). Falls back
+  // to the character's own material when there's no studio material (imports).
   useLayoutEffect(() => {
     for (const o of meshes) {
-      const mat = o.userData._activeMat;
+      const mat = o.userData._activeMat || o.material;
       if (!mat) continue;
       mat.wireframe = wireframe;
       mat.transparent = opacity < 1;
@@ -129,14 +132,33 @@ export function Mannequin(props) {
     }
   }, [meshes, wireframe, opacity]);
 
-  // Base scale from rest height (computed once per model).
+  // Base scale from rest height (computed once per model). Also measures the
+  // ground pad: how far the lowest contact BONE sits above the true mesh sole at
+  // bind pose, as a scale-invariant fraction of height. Different rigs place the
+  // toe/ankle bone at different heights above the foot mesh, so a fixed pad
+  // floats or sinks imported characters — this makes the actual feet rest on the
+  // floor. Native rig keeps its tuned GROUND_PAD (null ratio).
   const baseScale = useRef(1);
+  const soleRatioRef = useRef(null);
   useLayoutEffect(() => {
+    model.updateWorldMatrix(true, true);
     const box = new THREE.Box3().setFromObject(model);
     const size = new THREE.Vector3();
     box.getSize(size);
     baseScale.current = TARGET_HEIGHT / (size.y || 1);
-  }, [model]);
+
+    if (isNative) {
+      soleRatioRef.current = null;
+    } else {
+      let lowestBone = Infinity;
+      for (const o of contacts) {
+        const y = o.matrixWorld.elements[13];
+        if (y < lowestBone) lowestBone = y;
+      }
+      const gap = Number.isFinite(lowestBone) ? lowestBone - box.min.y : 0;
+      soleRatioRef.current = Math.max(0, gap / (size.y || 1));
+    }
+  }, [model, contacts, isNative]);
 
   // Ground-snap: scale, then drop the lowest posed joint to the floor. Recomputed
   // from scratch every call (position reset to 0 first), so nothing accumulates.
@@ -154,7 +176,12 @@ export function Mannequin(props) {
       const y = o.matrixWorld.elements[13]; // world Y (matches the rendered skin)
       if (y < lowest) lowest = y;
     }
-    if (Number.isFinite(lowest)) g.position.y = -lowest + GROUND_PAD * fs;
+    // Pad = measured bone→sole gap for imports, else the tuned lay-figure const.
+    const pad =
+      soleRatioRef.current != null
+        ? soleRatioRef.current * TARGET_HEIGHT * fs
+        : GROUND_PAD * fs;
+    if (Number.isFinite(lowest)) g.position.y = -lowest + pad;
   }, [contacts]);
 
   // Register the snap for the tweener (keeps grounded through a slerp).
@@ -188,13 +215,35 @@ export function Mannequin(props) {
 
   // Keep the figure grounded EVERY frame while a slerp transition is running,
   // so it never floats/sinks mid-transition (the store-hook path was unreliable).
+  // Also mirror the posed (primary) skeleton onto any secondary skeletons of a
+  // multi-mesh import so every part of the character deforms together.
+  const syncPairs = rig.sync;
   useFrame(() => {
+    if (syncPairs) {
+      for (let i = 0; i < syncPairs.length; i++) {
+        syncPairs[i][0].quaternion.copy(syncPairs[i][1].quaternion);
+      }
+    }
     if (useStore.getState().transition) doGroundSnap();
   });
 
+  // Optional whole-model facing correction for imports (e.g. a character that
+  // comes in facing away). Reset to 0 for the native rig.
+  useLayoutEffect(() => {
+    const [rx = 0, ry = 0, rz = 0] = character.retarget?.rootRotationDeg || [0, 0, 0];
+    model.rotation.set(rx * D2R, ry * D2R, rz * D2R);
+  }, [model, character.retarget]);
+
   useEffect(() => {
     setRig(bones);
-  }, [bones, setRig]);
+    setCorrections(rig.corrections, rig.report);
+    if (rig.report?.missing?.length) {
+      console.warn(
+        `[character] "${character.name}": unmapped bones →`,
+        rig.report.missing.join(", ")
+      );
+    }
+  }, [bones, rig, setRig, setCorrections, character.name]);
 
   // Restore the shared/cached scene to its rest pose on unmount so a later
   // remount doesn't start from a stale pose.
@@ -219,4 +268,33 @@ export function Mannequin(props) {
 const _v = new THREE.Vector3();
 const _box = new THREE.Box3();
 
-useGLTF.preload(MODEL_URL);
+// ── Format-specific loaders ────────────────────────────────────────────────
+// Hooks can't be called conditionally, so each format has its own tiny wrapper
+// that calls the matching loader and hands the loaded object to <CharacterRig>.
+function GlbCharacter({ character, ...props }) {
+  const { scene } = useGLTF(character.url);
+  // The scene is used directly (NOT cloned): cloning a SkinnedMesh doesn't
+  // rebind its skeleton to the cloned bones, so posing would silently no-op.
+  return <CharacterRig model={scene} character={character} {...props} />;
+}
+
+function FbxCharacter({ character, ...props }) {
+  const model = useFBX(character.url); // Mixamo FBX (cm units, mixamorig bones)
+  return <CharacterRig model={model} character={character} {...props} />;
+}
+
+/**
+ * Picks the character selected in the store and loads it with the loader that
+ * matches its file format (.glb → glTF, .fbx → FBX). Kept inside the scene's
+ * <Suspense> so a character swap re-suspends cleanly.
+ */
+export function Mannequin(props) {
+  const characterId = useStore((s) => s.characterId);
+  const character =
+    CHARACTERS_BY_ID[characterId] || CHARACTERS_BY_ID[DEFAULT_CHARACTER_ID];
+  const isFbx = /\.fbx($|\?)/i.test(character.url || "");
+  const Loader = isFbx ? FbxCharacter : GlbCharacter;
+  return <Loader key={character.id} character={character} {...props} />;
+}
+
+useGLTF.preload(DEFAULT_MODEL_URL);
