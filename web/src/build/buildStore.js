@@ -51,15 +51,25 @@ export const useBuild = create((set, get) => ({
   color: DEFAULT_COLOR,
   rot: 0,
   ghost: null, // { gx, gz } the placer is hovering, or null
-  mode: "place", // "place" | "delete"
-  hoverId: null, // brick under the cursor in delete mode
+  mode: "place", // "place" | "move" | "delete"
+  hoverId: null, // brick under the cursor in delete/move mode
+  carried: null, // { type, color, rot, gx0, gy0, gz0 } while moving a brick
   gl: null, // renderer, captured for screenshots
 
   setType: (type) => set({ type }),
   setColor: (color) => set({ color }),
-  rotate: () => set((s) => ({ rot: (s.rot + 90) % 360 })),
+  // Rotating a carried brick spins IT; otherwise it spins the palette piece.
+  rotate: () =>
+    set((s) =>
+      s.carried
+        ? { carried: { ...s.carried, rot: (s.carried.rot + 90) % 360 } }
+        : { rot: (s.rot + 90) % 360 }
+    ),
   setGhost: (ghost) => set({ ghost }),
-  setMode: (mode) => set({ mode, ghost: null, hoverId: null }),
+  setMode: (mode) => {
+    if (get().carried) get().cancelCarry(); // switching modes drops the carry
+    set({ mode, ghost: null, hoverId: null });
+  },
   setHover: (hoverId) => set({ hoverId }),
   setGL: (gl) => set({ gl }),
 
@@ -105,6 +115,42 @@ export const useBuild = create((set, get) => ({
       const blocks = s.blocks.filter((b) => b.id !== id);
       if (blocks.length === s.blocks.length) return {};
       return { blocks, history: [...s.history, s.blocks], hoverId: null, ...derive(blocks) };
+    }),
+
+  /** Lift a brick to move it: remember it, remove it, snapshot for one-step undo. */
+  pickUp: (id) =>
+    set((s) => {
+      const b = s.blocks.find((x) => x.id === id);
+      if (!b) return {};
+      const blocks = s.blocks.filter((x) => x.id !== id);
+      return {
+        blocks,
+        history: [...s.history, s.blocks], // pre-move snapshot (drop won't push again)
+        carried: { type: b.type, color: b.color, rot: b.rot, gx0: b.gx, gy0: b.gy, gz0: b.gz },
+        hoverId: null,
+        ...derive(blocks),
+      };
+    }),
+
+  /** Drop the carried brick at (gx,gz). No history push — pickUp already did. */
+  dropCarried: (gx, gz) =>
+    set((s) => {
+      const c = s.carried;
+      if (!c) return {};
+      const gy = get().restingY(gx, gz, c.type, c.rot);
+      const block = { id: nextId(), type: c.type, gx, gy, gz, rot: c.rot, color: c.color };
+      const blocks = [...s.blocks, block];
+      return { blocks, carried: null, ghost: null, ...derive(blocks) };
+    }),
+
+  /** Abort a move: put the brick back where it came from, undo the snapshot. */
+  cancelCarry: () =>
+    set((s) => {
+      const c = s.carried;
+      if (!c) return {};
+      const block = { id: nextId(), type: c.type, gx: c.gx0, gy: c.gy0, gz: c.gz0, rot: c.rot, color: c.color };
+      const blocks = [...s.blocks, block];
+      return { blocks, carried: null, ghost: null, history: s.history.slice(0, -1), ...derive(blocks) };
     }),
 
   undo: () =>

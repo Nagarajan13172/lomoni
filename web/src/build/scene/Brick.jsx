@@ -9,7 +9,7 @@ const _dummy = new THREE.Object3D();
  * baked into the footprint (fw/fd already swapped), so a plain brick needs no
  * mesh rotation — the studs and box just use the rotated dimensions.
  */
-export function Brick({ block, ghost = false, hovered = false }) {
+export function Brick({ block, ghost = false, highlight = null }) {
   const { type, rot, color } = block;
   const { fw, fd } = footprint(type, rot);
   const spec = BRICKS[type];
@@ -45,9 +45,9 @@ export function Brick({ block, ghost = false, hovered = false }) {
     transparent: ghost,
     opacity,
     depthWrite: !ghost,
-    // Delete-mode hover: glow the brick red so it's clear what will be removed.
-    emissive: hovered ? "#ff2e4d" : "#000000",
-    emissiveIntensity: hovered ? 0.55 : 0,
+    // Hover glow: red = will delete, blue = will pick up (move).
+    emissive: highlight === "delete" ? "#ff2e4d" : highlight === "move" ? "#3aa0ff" : "#000000",
+    emissiveIntensity: highlight ? 0.55 : 0,
   };
 
   return (

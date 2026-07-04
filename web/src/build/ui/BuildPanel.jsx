@@ -91,12 +91,18 @@ export function BuildPanel() {
         </div>
       </header>
 
-      <div className="build-modeswitch">
+      <div className="build-modeswitch build-modeswitch--3">
         <button
           className={"build-mode" + (mode === "place" ? " build-mode--on" : "")}
           onClick={() => setMode("place")}
         >
           🧱 Place
+        </button>
+        <button
+          className={"build-mode" + (mode === "move" ? " build-mode--on" : "")}
+          onClick={() => setMode("move")}
+        >
+          ✋ Move
         </button>
         <button
           className={"build-mode" + (mode === "delete" ? " build-mode--on" : "")}
@@ -106,7 +112,7 @@ export function BuildPanel() {
         </button>
       </div>
 
-      <section style={{ opacity: mode === "delete" ? 0.4 : 1, pointerEvents: mode === "delete" ? "none" : "auto" }}>
+      <section style={{ opacity: mode !== "place" ? 0.4 : 1, pointerEvents: mode !== "place" ? "none" : "auto" }}>
         <h2 className="build-sec">Piece</h2>
         <div className="build-cats">
           {PIECE_CATEGORIES.map((c) => (
@@ -134,7 +140,7 @@ export function BuildPanel() {
         </div>
       </section>
 
-      <section style={{ opacity: mode === "delete" ? 0.4 : 1, pointerEvents: mode === "delete" ? "none" : "auto" }}>
+      <section style={{ opacity: mode !== "place" ? 0.4 : 1, pointerEvents: mode !== "place" ? "none" : "auto" }}>
         <h2 className="build-sec">Colour</h2>
         <div className="build-swatches">
           {COLORS.map((c) => (
@@ -177,6 +183,8 @@ export function BuildPanel() {
       <footer className="build-foot">
         {mode === "delete"
           ? "Click a brick to remove it · drag to orbit · scroll to zoom"
+          : mode === "move"
+          ? "Click a brick to pick it up, click again to drop · R rotates · Esc cancels"
           : "Click to drop a brick · stacks on top of what you point at · drag to orbit · press R to rotate"}
       </footer>
     </aside>

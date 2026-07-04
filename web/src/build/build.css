@@ -79,6 +79,9 @@
   background: var(--chip);
   border: 1px solid var(--stroke);
 }
+.build-root .build-modeswitch--3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
 .build-root .build-mode {
   padding: 9px 10px;
   border-radius: 9px;

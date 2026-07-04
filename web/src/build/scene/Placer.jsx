@@ -33,6 +33,7 @@ export function Placer({ children }) {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "r" || e.key === "R") rotate();
+      else if (e.key === "Escape") useBuild.getState().cancelCarry();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -51,11 +52,14 @@ export function Placer({ children }) {
     <group
       onPointerMove={(e) => {
         e.stopPropagation();
-        if (useBuild.getState().mode === "delete") {
+        const s = useBuild.getState();
+        // Highlight a pick target when deleting, or when moving with empty hands.
+        if (s.mode === "delete" || (s.mode === "move" && !s.carried)) {
           setHover(blockIdOf(e.object));
           setGhost(null);
         } else {
           setGhost(cellFrom(e.point));
+          setHover(null);
         }
       }}
       onPointerLeave={() => {
@@ -72,9 +76,18 @@ export function Placer({ children }) {
         const dx = e.nativeEvent.clientX - d.x;
         const dy = e.nativeEvent.clientY - d.y;
         if (dx * dx + dy * dy > 36) return; // dragged to orbit → ignore
-        if (useBuild.getState().mode === "delete") {
+        const s = useBuild.getState();
+        if (s.mode === "delete") {
           const id = blockIdOf(e.object);
           if (id) remove(id);
+        } else if (s.mode === "move") {
+          if (s.carried) {
+            const c = cellFrom(e.point);
+            s.dropCarried(c.gx, c.gz);
+          } else {
+            const id = blockIdOf(e.object);
+            if (id) s.pickUp(id);
+          }
         } else {
           const c = cellFrom(e.point);
           place(c.gx, c.gz);
