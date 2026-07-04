@@ -107,6 +107,34 @@
   margin: 0 0 8px;
 }
 
+.build-root .build-cats {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+.build-root .build-cat {
+  flex: 1;
+  padding: 6px 4px;
+  border-radius: 8px;
+  border: 1px solid var(--stroke);
+  background: var(--chip);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.14s, color 0.14s, border-color 0.14s;
+}
+.build-root .build-cat:hover:not(.build-cat--on) {
+  color: var(--text);
+  border-color: var(--stroke-strong);
+}
+.build-root .build-cat--on {
+  background: rgba(255, 46, 136, 0.16);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
 .build-root .build-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

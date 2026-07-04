@@ -15,16 +15,31 @@ export const STUD_H = 0.18;       // stud cylinder height
 
 export const BASEPLATE = 24;      // studs per side of the baseplate
 
-// Brick catalog. w = studs along X, d = studs along Z, plates = height.
+// Piece catalog. w = studs along X, d = studs along Z, plates = height in
+// plates (brick = 3, plate/tile = 1), studs = has bumps on top (tiles don't).
 export const BRICKS = {
-  "1x1": { w: 1, d: 1, plates: 3, label: "1×1" },
-  "1x2": { w: 2, d: 1, plates: 3, label: "1×2" },
-  "1x4": { w: 4, d: 1, plates: 3, label: "1×4" },
-  "2x2": { w: 2, d: 2, plates: 3, label: "2×2" },
-  "2x4": { w: 4, d: 2, plates: 3, label: "2×4" },
-  "2x6": { w: 6, d: 2, plates: 3, label: "2×6" },
+  // Bricks — full height, studded
+  "b-1x1": { cat: "Bricks", w: 1, d: 1, plates: 3, studs: true, label: "1×1" },
+  "b-1x2": { cat: "Bricks", w: 2, d: 1, plates: 3, studs: true, label: "1×2" },
+  "b-1x4": { cat: "Bricks", w: 4, d: 1, plates: 3, studs: true, label: "1×4" },
+  "b-2x2": { cat: "Bricks", w: 2, d: 2, plates: 3, studs: true, label: "2×2" },
+  "b-2x4": { cat: "Bricks", w: 4, d: 2, plates: 3, studs: true, label: "2×4" },
+  "b-2x6": { cat: "Bricks", w: 6, d: 2, plates: 3, studs: true, label: "2×6" },
+
+  // Plates — one-third height, studded
+  "p-1x2": { cat: "Plates", w: 2, d: 1, plates: 1, studs: true, label: "1×2" },
+  "p-1x4": { cat: "Plates", w: 4, d: 1, plates: 1, studs: true, label: "1×4" },
+  "p-2x2": { cat: "Plates", w: 2, d: 2, plates: 1, studs: true, label: "2×2" },
+  "p-2x4": { cat: "Plates", w: 4, d: 2, plates: 1, studs: true, label: "2×4" },
+  "p-2x6": { cat: "Plates", w: 6, d: 2, plates: 1, studs: true, label: "2×6" },
+
+  // Tiles — flat & smooth (no studs), for finished surfaces
+  "t-1x2": { cat: "Tiles", w: 2, d: 1, plates: 1, studs: false, label: "1×2" },
+  "t-2x2": { cat: "Tiles", w: 2, d: 2, plates: 1, studs: false, label: "2×2" },
+  "t-2x4": { cat: "Tiles", w: 4, d: 2, plates: 1, studs: false, label: "2×4" },
 };
-export const DEFAULT_TYPE = "2x4";
+export const PIECE_CATEGORIES = ["Bricks", "Plates", "Tiles"];
+export const DEFAULT_TYPE = "b-2x4";
 
 export const COLORS = [
   "#d01012", // red

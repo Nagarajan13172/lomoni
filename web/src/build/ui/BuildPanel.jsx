@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { useBuild } from "../buildStore";
-import { BRICKS, COLORS } from "../bricks";
+import { BRICKS, COLORS, PIECE_CATEGORIES } from "../bricks";
 
 /** Palette + colours + actions for the block builder. */
 export function BuildPanel() {
   const type = useBuild((s) => s.type);
   const setType = useBuild((s) => s.setType);
+  const [pcat, setPcat] = useState("Bricks");
   const color = useBuild((s) => s.color);
   const setColor = useBuild((s) => s.setColor);
   const rot = useBuild((s) => s.rot);
@@ -43,17 +45,30 @@ export function BuildPanel() {
       </div>
 
       <section style={{ opacity: mode === "delete" ? 0.4 : 1, pointerEvents: mode === "delete" ? "none" : "auto" }}>
-        <h2 className="build-sec">Brick</h2>
-        <div className="build-grid">
-          {Object.entries(BRICKS).map(([id, b]) => (
+        <h2 className="build-sec">Piece</h2>
+        <div className="build-cats">
+          {PIECE_CATEGORIES.map((c) => (
             <button
-              key={id}
-              className={"build-chip" + (type === id ? " build-chip--on" : "")}
-              onClick={() => setType(id)}
+              key={c}
+              className={"build-cat" + (pcat === c ? " build-cat--on" : "")}
+              onClick={() => setPcat(c)}
             >
-              {b.label}
+              {c}
             </button>
           ))}
+        </div>
+        <div className="build-grid">
+          {Object.entries(BRICKS)
+            .filter(([, b]) => b.cat === pcat)
+            .map(([id, b]) => (
+              <button
+                key={id}
+                className={"build-chip" + (type === id ? " build-chip--on" : "")}
+                onClick={() => setType(id)}
+              >
+                {b.label}
+              </button>
+            ))}
         </div>
       </section>
 

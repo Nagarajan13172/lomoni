@@ -12,7 +12,9 @@ const _dummy = new THREE.Object3D();
 export function Brick({ block, ghost = false, hovered = false }) {
   const { type, rot, color } = block;
   const { fw, fd } = footprint(type, rot);
-  const plates = BRICKS[type].plates;
+  const spec = BRICKS[type];
+  const plates = spec.plates;
+  const hasStuds = spec.studs;
   const w = fw * STUD, d = fd * STUD, h = plates * PLATE;
   const count = fw * fd;
   const pos = blockWorld(block);
@@ -54,15 +56,17 @@ export function Brick({ block, ghost = false, hovered = false }) {
         <boxGeometry args={[w, h, d]} />
         <meshStandardMaterial {...matProps} />
       </mesh>
-      <instancedMesh
-        key={fw + "x" + fd}
-        ref={studs}
-        args={[undefined, undefined, count]}
-        castShadow={!ghost}
-      >
-        <cylinderGeometry args={[STUD_R, STUD_R, STUD_H, 16]} />
-        <meshStandardMaterial {...matProps} />
-      </instancedMesh>
+      {hasStuds && (
+        <instancedMesh
+          key={fw + "x" + fd}
+          ref={studs}
+          args={[undefined, undefined, count]}
+          castShadow={!ghost}
+        >
+          <cylinderGeometry args={[STUD_R, STUD_R, STUD_H, 16]} />
+          <meshStandardMaterial {...matProps} />
+        </instancedMesh>
+      )}
     </group>
   );
 }
