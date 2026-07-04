@@ -42,20 +42,6 @@ export function CharacterLibrary() {
           retarget map for this character.
         </p>
       )}
-
-      <details className="charlib__help">
-        <summary>Add a Mixamo character</summary>
-        <ol>
-          <li>On mixamo.com, pick a character → <b>T-pose</b> → Download as <b>glTF Binary (.glb)</b>.</li>
-          <li>Save it into <code>web/public/models/</code>.</li>
-          <li>Register it in <code>character/characters.js</code> with <code>retarget: MIXAMO_PROFILE</code>.</li>
-        </ol>
-        <p>
-          Your Mixamo license covers using assets in your project — don't commit
-          them to a public repo unless it allows redistribution. Every pose in
-          the library drives every character automatically.
-        </p>
-      </details>
     </div>
   );
 }

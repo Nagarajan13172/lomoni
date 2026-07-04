@@ -365,6 +365,44 @@
     border-radius: 8px;
   }
 
+  /* ---------- Customize (direct on-character posing) ---------- */
+  .customize__btn {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 11px;
+    border: 1px solid var(--stroke);
+    background: var(--chip);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.14s, border-color 0.14s, transform 0.1s;
+  }
+  .customize__btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--stroke-strong);
+  }
+  .customize__btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .customize__btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .customize__btn--on {
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    color: #12141d;
+    border-color: transparent;
+    box-shadow: 0 6px 18px rgba(255, 46, 136, 0.28);
+  }
+  .customize__hint {
+    margin-top: 9px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+
   /* ---------- Saved poses ---------- */
   .saved {
     margin-top: 12px;

@@ -3,8 +3,7 @@ import { AccordionSection } from "./Accordion";
 import { Presets } from "./Presets";
 import { PoseLibrary } from "./PoseLibrary";
 import { CharacterLibrary } from "./CharacterLibrary";
-import { JointList } from "./JointList";
-import { JointInspector } from "./JointInspector";
+import { Customize } from "./Customize";
 import { POSE_LIBRARY } from "../pose/poseLibrary";
 import { CHARACTERS } from "../character/characters";
 import { useStore } from "../store";
@@ -14,8 +13,6 @@ export function ControlPanel() {
   const resetAll = useStore((s) => s.resetAll);
   const mirror = useStore((s) => s.mirror);
   const randomize = useStore((s) => s.randomize);
-  const showHandles = useStore((s) => s.showHandles);
-  const toggleHandles = useStore((s) => s.toggleHandles);
   const gl = useStore((s) => s.gl);
   const [open, setOpen] = useState(true);
 
@@ -62,23 +59,14 @@ export function ControlPanel() {
             <Presets />
           </AccordionSection>
 
-          <AccordionSection title="Edit joints (bend by hand)" icon="🎯">
-            <div className="acc-sub">Joints</div>
-            <JointList />
-            <div className="acc-sub" style={{ marginTop: 12 }}>Selected joint</div>
-            <JointInspector />
+          <AccordionSection title="Customize pose" icon="🎯" defaultOpen>
+            <Customize />
           </AccordionSection>
 
           <AccordionSection title="Actions" icon="🛠️">
             <div className="toolbar__grid">
               <button className="mq-btn" disabled={!ready} onClick={resetAll}>
                 ↺ Reset all
-              </button>
-              <button
-                className={"mq-btn" + (showHandles ? " mq-btn--on" : "")}
-                onClick={toggleHandles}
-              >
-                {showHandles ? "◉" : "○"} Joint dots
               </button>
               <button className="mq-btn" disabled={!ready} onClick={() => mirror("l2r")}>
                 ⇄ Mirror L→R
