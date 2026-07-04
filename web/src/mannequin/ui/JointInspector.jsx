@@ -82,7 +82,25 @@ export function JointInspector() {
               {ax.label}
               <em className="slider__desc">{ax.desc}</em>
             </span>
-            <span className="slider__val">{Math.round(deg[ax.key])}°</span>
+            <span className="slider__num-wrap">
+              <input
+                type="number"
+                className="slider__num"
+                min={-180}
+                max={180}
+                step={1}
+                value={Math.round(deg[ax.key])}
+                style={{ ["--tint"]: ax.tint }}
+                onFocus={() => (editing.current = true)}
+                onBlur={() => (editing.current = false)}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  if (Number.isFinite(v))
+                    setAxis(ax.key, Math.max(-180, Math.min(180, v)));
+                }}
+              />
+              <span className="slider__num-unit">°</span>
+            </span>
           </div>
           <input
             type="range"
