@@ -32,10 +32,10 @@ export default function WhoWeAre() {
             <div className="relative h-[46vh] min-h-[300px] md:col-span-4 md:h-[74vh]">
               <div
                 className="pointer-events-none absolute inset-0"
-                style={{ background: "radial-gradient(circle at 50% 44%, rgba(236,90,65,0.13), transparent 60%)" }}
+                style={{ background: "radial-gradient(circle at 50% 44%, var(--hero-glow), transparent 60%)" }}
               />
               <div className="stripes-motif pointer-events-none absolute right-2 top-6 hidden h-[300px] w-[190px] rotate-6 opacity-[0.10] md:block" />
-              <HeroBust className="absolute inset-0" src="/models/paper-bust-glove.glb" />
+              <HeroBust className="absolute inset-0" src="/models/luwai_HD_1783280040963.glb" rotation={[0, 0, 0]} />
             </div>
           </div>
         </div>

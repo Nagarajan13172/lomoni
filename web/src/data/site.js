@@ -7,12 +7,13 @@ export const site = {
   email: "lomonidesignstudio@gmail.com",
   instagram: { handle: "@lomoni_design_studio", url: "https://instagram.com/lomoni_design_studio" },
   phones: [
+    { label: "WhatsApp & Call", number: "+91 98947 70613", raw: "919894770613", whatsapp: true },
     { label: "WhatsApp & Call", number: "+91 78450 69933", raw: "917845069933", whatsapp: true },
     { label: "Call", number: "+91 63800 85601", raw: "916380085601" },
     { label: "Call", number: "+91 95005 01647", raw: "919500501647" },
   ],
   address: {
-    lines: ["D.No.7/16, Rajaram Nagar Road,", "Sahadevapuram, Salem — 636 007"],
+    lines: ["35, 3rd Sreerangan Street,", "Dadagapatty, Salem — 636 006"],
     city: "Salem, Tamil Nadu, India",
   },
   hours: [

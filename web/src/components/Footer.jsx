@@ -14,7 +14,7 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <img src="/images/logo.png" alt="" className="h-11 w-11 rounded-full bg-paper" />
               <div className="font-display text-lg font-bold leading-tight">
-                LOMONI
+                <span className="brandmark">LOMONI</span>
                 <span className="block text-[11px] font-semibold tracking-[0.2em] text-coral">
                   ROAD TO D-SCHOOL
                 </span>

@@ -4,17 +4,21 @@
    LOMONI Design Studio — Design tokens
    Style: Editorial / Creative-Studio (Brutalism + Motion-Driven)
    Type:  Space Grotesk (display) + DM Sans (body)
-   Brand: coral + ink on warm paper, multicolor exam-track accents
+   Brand: cardboard-brown primary + ink on white, exam-track accents
+   NOTE: the primary accent still lives on the `--color-coral` token
+   (kept by name to avoid a site-wide class rename) — its value is now
+   the kraft cardboard brown.
 ----------------------------------------------------------------- */
 @theme {
   --color-ink: #141312;
   --color-ink-soft: #3b3a37;
-  --color-paper: #fbf8f2;
-  --color-paper-deep: #f3ede1;
+  --color-paper: #ffffff;
+  --color-paper-deep: #f5f1e9;
   --color-card: #ffffff;
 
-  --color-coral: #ec5a41;
-  --color-coral-deep: #d8401f;
+  /* primary = kraft cardboard brown */
+  --color-coral: #a06b2e;
+  --color-coral-deep: #82561f;
 
   /* exam-track accents (from the brand stripe motif) */
   --color-track-purple: #6c5cf5;
@@ -204,4 +208,27 @@
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ================================================================
+   Cardboard brand accents (white ground · cardboard-brown primary)
+   `--hero-glow` tints the soft spotlight behind the busts to match the
+   primary. `.brandmark` fills the LOMONI wordmark with kraft-paper
+   texture — the "cardboard font".
+   ---------------------------------------------------------------- */
+:root {
+  --hero-glow: rgba(160, 107, 46, 0.14);
+}
+
+/* Folded-cardboard wordmark — LOMONI letters filled with kraft paper. */
+.brandmark {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E"),
+    linear-gradient(135deg, #c9a46b 0%, #b0842f 46%, #8c5e2b 100%);
+  background-blend-mode: multiply;
+  background-size: cover;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
 }

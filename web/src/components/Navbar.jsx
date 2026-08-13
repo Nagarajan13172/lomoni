@@ -28,7 +28,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-3" aria-label="LOMONI Design Studio — home">
             <img src="/images/logo.png" alt="" className="h-9 w-9 rounded-full" />
             <span className="font-display text-[15px] font-bold leading-none tracking-tight">
-              LOMONI
+              <span className="brandmark">LOMONI</span>
               <span className="block text-[10px] font-semibold tracking-[0.2em] text-coral">
                 ROAD TO D-SCHOOL
               </span>
