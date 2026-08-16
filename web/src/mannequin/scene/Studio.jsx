@@ -14,6 +14,7 @@ import { JointHandles } from "./JointHandles";
 import { PoseGizmo } from "./PoseGizmo";
 import { PoseTweener } from "./PoseTweener";
 import { UrlSync } from "./UrlSync";
+import { StudioFraming } from "./StudioFraming";
 import { useStore } from "../store";
 import { getTheme } from "./themes";
 
@@ -24,6 +25,7 @@ const DISC = "#e2e4ea"; // ground disc, slightly deeper than the backdrop
 
 export function Studio() {
   const select = useStore((s) => s.select);
+  const locked = useStore((s) => s.locked);
   const setGL = useStore((s) => s.setGL);
   const { key, fill, rim, hemi } = theme;
   const [l, r, t, b] = key.shadowCam;
@@ -46,7 +48,7 @@ export function Studio() {
         scene.background = new THREE.Color(BG);
         scene.fog = new THREE.Fog(BG, 18, 40);
       }}
-      onPointerMissed={() => select(null)}
+      onPointerMissed={() => !useStore.getState().locked && select(null)}
     >
       <AdaptiveDpr pixelated />
 
@@ -100,8 +102,11 @@ export function Studio() {
         <meshStandardMaterial color={DISC} roughness={0.98} metalness={0} />
       </mesh>
 
+      <StudioFraming />
+
       <OrbitControls
         makeDefault
+        enabled={!locked}
         target={[0, 1.4, 0]}
         enableDamping
         dampingFactor={0.08}

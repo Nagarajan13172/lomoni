@@ -1,8 +1,15 @@
 import { Line } from "@react-three/drei";
 
 /**
- * One construction stroke. Drawn on top of the scene (no depth write, positive
- * render order) so a guide never half-disappears inside the shape it explains.
+ * One construction stroke.
+ *
+ * Guides depth-test honestly, so a line that runs into a shape is hidden by it
+ * rather than painted across its face. That is what makes the drawing readable:
+ * you see the part of the ray that is in the open, and the shape itself tells you
+ * where it stops.
+ *
+ * `onFloor` is the exception. Lines lying on the ground plane are nudged toward
+ * the camera so they cannot z-fight with the floor they are drawn on.
  */
 export function GuideLine({
   start,
@@ -13,7 +20,7 @@ export function GuideLine({
   gapSize = 0.2,
   opacity = 0.55,
   lineWidth = 1.45,
-  depthTest = true,
+  onFloor = false,
   renderOrder = 18,
 }) {
   return (
@@ -26,11 +33,11 @@ export function GuideLine({
       lineWidth={lineWidth}
       transparent
       opacity={opacity}
-      depthTest={depthTest}
+      depthTest
       depthWrite={false}
-      polygonOffset
-      polygonOffsetFactor={-1}
-      polygonOffsetUnits={-1}
+      polygonOffset={onFloor}
+      polygonOffsetFactor={onFloor ? -2 : 0}
+      polygonOffsetUnits={onFloor ? -2 : 0}
       toneMapped={false}
       fog={false}
       renderOrder={renderOrder}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { AccordionSection } from "./Accordion";
 import { Presets } from "./Presets";
 import { PoseLibrary } from "./PoseLibrary";
@@ -16,6 +16,8 @@ export function ControlPanel() {
   const setShowHandles = useStore((s) => s.setShowHandles);
   const select = useStore((s) => s.select);
   const gl = useStore((s) => s.gl);
+  const locked = useStore((s) => s.locked);
+  const setPanelInset = useStore((s) => s.setPanelInset);
   const [open, setOpen] = useState(true);
   const [mode, setModeState] = useState("poses"); // "poses" | "customize"
 
@@ -26,6 +28,33 @@ export function ControlPanel() {
     setShowHandles(m === "customize");
     if (m !== "customize") select(null);
   };
+
+  // Report the screen space this panel covers, so the scene can frame the figure
+  // in what is left rather than centring behind us. A closed panel covers
+  // nothing, even though it is still in the DOM.
+  const panel = useRef(null);
+  useLayoutEffect(() => {
+    const el = panel.current;
+    if (!el) return undefined;
+
+    const measure = () => {
+      if (!open) return setPanelInset(0, 0);
+      const box = el.getBoundingClientRect();
+      const stacked = window.matchMedia("(max-width: 900px)").matches;
+      if (stacked) setPanelInset(0, Math.round(box.height + 24));
+      else setPanelInset(Math.round(box.width + 32), 0);
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+      setPanelInset(0, 0);
+    };
+  }, [setPanelInset, open]);
 
   const screenshot = () => {
     if (!gl) return;
@@ -51,7 +80,7 @@ export function ControlPanel() {
         </button>
       )}
 
-      <aside className={"panel" + (open ? "" : " panel--closed")}>
+      <aside className={"panel" + (open ? "" : " panel--closed")} ref={panel}>
         <header className="panel__brand">
           <div className="panel__logo">♛</div>
           <div>
@@ -84,7 +113,7 @@ export function ControlPanel() {
             </button>
             <button
               className={"modeswitch__btn" + (mode === "customize" ? " modeswitch__btn--on" : "")}
-              disabled={!ready}
+              disabled={!ready || locked}
               onClick={() => setMode("customize")}
             >
               🎯 Customize
@@ -109,16 +138,16 @@ export function ControlPanel() {
 
           <AccordionSection title="Actions" icon="🛠️">
             <div className="toolbar__grid">
-              <button className="mq-btn" disabled={!ready} onClick={resetAll}>
+              <button className="mq-btn" disabled={!ready || locked} onClick={resetAll}>
                 ↺ Reset all
               </button>
-              <button className="mq-btn" disabled={!ready} onClick={() => mirror("l2r")}>
+              <button className="mq-btn" disabled={!ready || locked} onClick={() => mirror("l2r")}>
                 ⇄ Mirror L→R
               </button>
-              <button className="mq-btn" disabled={!ready} onClick={randomize}>
+              <button className="mq-btn" disabled={!ready || locked} onClick={randomize}>
                 🎲 Randomize
               </button>
-              <button className="mq-btn" disabled={!ready} onClick={screenshot}>
+              <button className="mq-btn" disabled={!ready || locked} onClick={screenshot}>
                 📷 Screenshot
               </button>
             </div>
@@ -126,7 +155,9 @@ export function ControlPanel() {
         </div>
 
         <footer className="panel__foot">
-          Click a pose, or a dot to bend by hand · scroll to zoom
+          {locked
+            ? "Frame locked — open the lock in the toolbar to make changes"
+            : "Click a pose, or a dot to bend by hand · scroll to zoom"}
         </footer>
       </aside>
     </>

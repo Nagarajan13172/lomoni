@@ -1,19 +1,26 @@
 import { Loader } from "@react-three/drei";
 import { ShapesStudio } from "../shapes/ShapesStudio";
 import { ShapesPanel } from "../shapes/ui/ShapesPanel";
+import { ShapesToolbar } from "../shapes/ui/ShapesToolbar";
+import { useShapes } from "../shapes/shapesStore";
 import "../shapes/shapes.css";
 
 /**
- * "Shapes" — a free-play lighting studio. A gallery of primitive shapes sits on
- * a floor while you drive a single movable sun to watch them shade and cast
+ * "Shapes" — a free-play lighting studio. A cast of primitive shapes stands on a
+ * floor while you drive a single movable bulb to watch them shade and cast
  * shadows. Everything is scoped under `.shapes-root`.
  */
 export default function Shapes() {
+  // Hoisted to the root so a locked frame can be shown on the stage itself,
+  // not only on the toolbar button.
+  const locked = useShapes((s) => s.locked);
+
   return (
-    <div className="shapes-root">
+    <div className={`shapes-root ${locked ? "is-locked" : ""}`}>
       <div className="shapes-stage">
         <ShapesStudio />
       </div>
+      <ShapesToolbar />
       <ShapesPanel />
       <Loader
         containerStyles={{ background: "rgba(10,12,18,0.9)" }}

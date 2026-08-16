@@ -69,6 +69,12 @@ export const useStore = create((set, get) => ({
   selected: null, // joint name currently being edited
   activePoseId: null, // id of the currently-applied library pose (for highlight)
   showHandles: false, // joint dots hidden by default (toggle on to click + pose)
+
+  // ── Drawing-practice state, mirroring the Shapes studio ─────────────────
+  locked: false, // pose and camera frozen so you can draw against a still figure
+  frameView: false, // a clean three-quarter view with nothing drawn on it
+  frameToken: 0, // bumped to ask the camera to swing to the framing pose
+  panelInset: { right: 0, bottom: 0 }, // screen space the control panel covers
   gl: null, // renderer, captured for screenshots
   poseVersion: 0, // bump to notify the DOM that bones moved (presets, reset...)
   theme: "dark", // "dark" | "light" | "blueprint" — see themes.js
@@ -119,7 +125,35 @@ export const useStore = create((set, get) => ({
   setActivePose: (id) => set({ activePoseId: id }),
   // Selecting a joint to hand-edit cancels any transition + pose highlight.
   select: (name) => set((s) => ({ selected: name, transition: null, activePoseId: null })),
-  toggleHandles: () => set((s) => ({ showHandles: !s.showHandles })),
+  /**
+   * The lock freezes everything that could shift the picture — the camera, the
+   * joint handles, the gizmo, the turntable and every pose action. Only what is
+   * DRAWN on top stays free, so the dots can be brought back to check your work
+   * without the figure moving.
+   */
+  toggleLock: () => set((s) => ({ locked: !s.locked })),
+
+  // Frame view is a mode, not a stored copy of the toggles, so leaving it puts
+  // back exactly what you had.
+  setFrameView: (frameView) =>
+    set((s) =>
+      s.frameView === frameView || s.locked // a locked frame does not get re-posed
+        ? s
+        : { frameView, frameToken: s.frameToken + 1, selected: frameView ? null : s.selected },
+    ),
+
+  setPanelInset: (right, bottom) =>
+    set((s) =>
+      s.panelInset.right === right && s.panelInset.bottom === bottom
+        ? s
+        : { panelInset: { right, bottom } },
+    ),
+
+  // Asking for the dots back is the same as saying you are done practising.
+  toggleHandles: () =>
+    set((s) =>
+      s.frameView ? { frameView: false, showHandles: true } : { showHandles: !s.showHandles },
+    ),
   setShowHandles: (v) => set({ showHandles: !!v }),
   setTheme: (t) => set({ theme: t }),
   setFloorStyle: (v) => set({ floorStyle: v }),
@@ -297,3 +331,9 @@ function randSeeded(seed) {
     return s / 4294967296;
   };
 }
+
+// What the scene actually shows. Frame view and the lock both win over the
+// toggles, so practice mode can never be half on.
+export const handlesVisible = (s) => s.showHandles && !s.frameView && !s.locked;
+export const gizmoEnabled = (s) => !!s.selected && !s.frameView && !s.locked;
+export const spinning = (s) => s.autoRotate && !s.frameView && !s.locked;

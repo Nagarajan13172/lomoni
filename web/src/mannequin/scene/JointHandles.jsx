@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { JOINTS, useStore } from "../store";
+import { JOINTS, useStore, handlesVisible } from "../store";
 
 const tmp = new THREE.Vector3();
 
@@ -13,7 +13,7 @@ const tmp = new THREE.Vector3();
 export function JointHandles() {
   const bones = useStore((s) => s.bones);
   const selected = useStore((s) => s.selected);
-  const show = useStore((s) => s.showHandles);
+  const show = useStore(handlesVisible);
   const select = useStore((s) => s.select);
   const [hovered, setHovered] = useState(null);
 

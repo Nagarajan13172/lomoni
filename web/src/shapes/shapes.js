@@ -1,3 +1,5 @@
+import { bearingGap, directionFromAngles, pickBearing } from "../lib/viewAngles";
+
 // ──────────────────────────────────────────────────────────────────────────
 // Shapes playground — a tiny lighting sandbox.
 //
@@ -84,24 +86,27 @@ export function extendFrom(from, point, factor) {
   ];
 }
 
-// Slider limits. The floor of LIGHT_HEIGHT matters: as the bulb sinks toward the
-// top of a shape the shadow races off to infinity (correctly — that is what a
-// finite light does), so we keep the bulb clear of the tallest shape.
-export const LIGHT_HEIGHT = { min: 7, max: 26, step: 0.5 };
-export const LIGHT_DISTANCE = { min: 3, max: 24, step: 0.5 };
+// Slider limits. The bulb is free to go anywhere between them — including below
+// the top of a shape, or under a lifted one. That is a real lighting situation
+// and it should be reachable; the drawing copes with it by clipping at the edge
+// of the floor rather than by fencing the bulb in. See `clipToFloor`.
+export const LIGHT_HEIGHT = { min: 1.5, max: 26, step: 0.5 };
+export const LIGHT_DISTANCE = { min: 3, max: 28, step: 0.5 };
 
 /** How far from the studio centre a shape may be dragged. */
-export const OBJECT_RANGE = 8;
+export const OBJECT_RANGE = 15;
 
 /** Kept modest so the floor stays readable and the guides stay untangled. */
 export const MAX_OBJECTS = 8;
 
+/** How far off the floor a shape may be lifted — enough for a stack of three. */
+export const OBJECT_LIFT = { min: 0, max: 10, step: 0.1 };
+
 /**
- * Floor disc radius. Sized from the worst case the sliders allow — the lowest
- * bulb, at full distance, over the tallest shape pushed to the far edge of its
- * range — so a shadow never runs off the end of the world.
+ * Floor disc radius. Comfortably past the longest shadow ordinary settings throw
+ * (about 63 units), and the edge that `clipToFloor` trims the extreme ones to.
  */
-export const FLOOR_RADIUS = 46;
+export const FLOOR_RADIUS = 92;
 
 /** Keep a floor position inside a disc of `radius`. */
 export function clampToDisc(x, z, radius) {
@@ -115,25 +120,104 @@ export function clampToDisc(x, z, radius) {
  * space so dragging it around only moves an origin, instead of re-walking the
  * geometry every frame.
  */
-export function toWorld([x, y, z], [ox, oz]) {
-  return [x + ox, y, z + oz];
+export function toWorld([x, y, z], [ox, oz], lift = 0, spin = 0) {
+  if (!spin) return [x + ox, y + lift, z + oz];
+  // Same Y rotation three applies, so the guides trace the shape you can see.
+  const c = Math.cos(spin);
+  const s = Math.sin(spin);
+  return [x * c + z * s + ox, y + lift, -x * s + z * c + oz];
 }
 
 /**
- * Somewhere to drop a newly added shape: walk a golden-angle spiral out from the
- * centre and take the first spot that is not crowding anything already standing
- * there. The golden angle is what stops successive shapes landing in a line.
+ * How far a shape reaches sideways from its own centre. Measured to the corner
+ * of its footprint, so the answer does not change as the shape is spun.
  */
-export function nextFreeSpot(taken, range = OBJECT_RANGE, gap = 3.2) {
-  if (!taken.length) return [0, 0];
-  let last = [0, 0];
-  for (let i = 1; i <= 240; i += 1) {
-    const angle = i * 2.399963229728653;
-    const radius = Math.min(2.6 + Math.sqrt(i) * 1.1, range);
-    last = [Math.cos(angle) * radius, Math.sin(angle) * radius];
-    if (taken.every((p) => Math.hypot(p[0] - last[0], p[1] - last[1]) >= gap)) return last;
+export function footprintRadius(frame) {
+  const { min, max } = frame.bounds;
+  return Math.hypot(Math.max(-min[0], max[0]), Math.max(-min[2], max[2]));
+}
+
+/**
+ * Trim a shadow point to the edge of the floor.
+ *
+ * A bulb level with — or below — the thing it lights is a real situation, and
+ * the maths is honest about it: the shadow stretches toward the horizon and, past
+ * the bulb's own height, stops landing on the floor at all. Left alone that puts
+ * construction lines thousands of units out and sends the camera chasing them.
+ *
+ * Every shadow point sits on a ray out of the vanishing point — S − VP is always
+ * parallel to the point's horizontal offset from the bulb — so trimming ALONG
+ * that ray shortens the line without bending it. The picture then reads as a
+ * shadow running off the edge of the floor, which is what it is.
+ */
+export function clipToFloor(vp, point, limit = FLOOR_RADIUS) {
+  if (Math.hypot(point[0], point[2]) <= limit) return point;
+  const dx = point[0] - vp[0];
+  const dz = point[2] - vp[2];
+  const len = Math.hypot(dx, dz);
+  if (len < 1e-6) return point;
+
+  // Where the ray vp + u·d crosses the circle of radius `limit` about the origin.
+  const ux = dx / len;
+  const uz = dz / len;
+  const b = vp[0] * ux + vp[2] * uz;
+  const c = vp[0] * vp[0] + vp[2] * vp[2] - limit * limit;
+  const u = -b + Math.sqrt(Math.max(b * b - c, 0));
+  return [vp[0] + ux * u, 0, vp[2] + uz * u];
+}
+
+/** The top of the highest shape standing under `self` — or the floor, at 0. */
+export function supportTop(objects, frames, self) {
+  let top = 0;
+  for (const other of objects) {
+    if (other.id === self.id) continue;
+    const frame = frames[other.type];
+    if (!frame) continue;
+    const reach = Math.hypot(other.position[0] - self.position[0], other.position[1] - self.position[1]);
+    if (reach > footprintRadius(frame)) continue; // not underneath it
+    top = Math.max(top, (other.elevation ?? 0) + frame.bounds.max[1]);
   }
-  return last; // crowded floor: overlap beats refusing to place it
+  return top;
+}
+
+/** The highest point the bulb has to light, across the whole cast. */
+export function tallestTop(objects, frames) {
+  let top = 0;
+  for (const object of objects) {
+    const frame = frames[object.type];
+    if (frame) top = Math.max(top, (object.elevation ?? 0) + frame.bounds.max[1]);
+  }
+  return top;
+}
+
+/** Spin, normalised to one turn. */
+export function normaliseSpin(radians) {
+  const turn = Math.PI * 2;
+  return ((radians % turn) + turn) % turn;
+}
+
+/**
+ * Somewhere to drop a newly added shape: right beside the one you were last
+ * working with, rather than back at the middle of the floor. Rings walk outward
+ * from that anchor and the first spot that is not crowding anything wins, so a
+ * new shape lands within reach of the arrangement you have been building.
+ */
+export function nextFreeSpot(taken, anchor = [0, 0], range = OBJECT_RANGE, gap = 3.2) {
+  if (!taken.length) return [0, 0];
+
+  for (let ring = 1; ring <= 10; ring += 1) {
+    const radius = gap * ring;
+    const steps = 8 * ring;
+    for (let i = 0; i < steps; i += 1) {
+      // Offset each ring so successive shapes do not line up in a row.
+      const angle = (i / steps) * Math.PI * 2 + ring * 0.65;
+      const spot = [anchor[0] + Math.cos(angle) * radius, anchor[1] + Math.sin(angle) * radius];
+      if (Math.hypot(spot[0], spot[1]) > range) continue;
+      if (taken.every((p) => Math.hypot(p[0] - spot[0], p[1] - spot[1]) >= gap)) return spot;
+    }
+  }
+  // Crowded floor: overlapping beats refusing to place it.
+  return clampToDisc(anchor[0] + gap, anchor[1], range);
 }
 
 /** Floor position → the top angle and distance that put the bulb over it. */
@@ -141,4 +225,32 @@ export function lightFromFloor(x, z) {
   const distance = Math.min(Math.max(Math.hypot(x, z), LIGHT_DISTANCE.min), LIGHT_DISTANCE.max);
   const azimuth = (Math.atan2(x, z) * 180) / Math.PI;
   return { azimuth: azimuth < 0 ? azimuth + 360 : azimuth, distance };
+}
+
+export { bearingGap, directionFromAngles } from "../lib/viewAngles";
+
+// ── Frame view ─────────────────────────────────────────────────────────────
+//
+// The viewpoint you would actually set a still life up from. Four candidate
+// bearings, each a classic three-quarter on the axis-aligned shapes — you see
+// two faces of a box rather than one flat one. We take whichever of the four
+// puts the light roughly across the scene, because a light square behind the
+// camera flattens every form and hides the cast shadow behind its own object.
+const FRAME_BEARINGS = [35, 125, 215, 305];
+const FRAME_ELEVATION = 28;
+
+/** The three-quarter viewpoint to use with the light where it currently is. */
+export function frameViewAngles(lightAzimuth, cameraBearing = null) {
+  return {
+    azimuth: pickBearing(FRAME_BEARINGS, lightAzimuth, cameraBearing),
+    elevation: FRAME_ELEVATION,
+  };
+}
+
+/** Free 3D position → the bulb's three stored values, each kept in range. */
+export function lightFromPoint(x, y, z) {
+  return {
+    ...lightFromFloor(x, z),
+    height: Math.min(Math.max(y, LIGHT_HEIGHT.min), LIGHT_HEIGHT.max),
+  };
 }

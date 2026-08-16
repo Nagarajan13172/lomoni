@@ -1,8 +1,8 @@
 import { useRef } from "react";
 import { Html } from "@react-three/drei";
-import { useShapes } from "../shapesStore";
-import { lightPosition, elevationAngle, vanishingPoint } from "../shapes";
-import { useFloorDrag } from "./useFloorDrag";
+import { useShapes, labelsVisible } from "../shapesStore";
+import { lightPosition, elevationAngle } from "../shapes";
+import { useFloorDrag, LIGHT_PRIORITY } from "./useFloorDrag";
 
 /**
  * A single movable bulb, hanging at a finite point above the floor.
@@ -20,21 +20,21 @@ export function Lighting() {
   const azimuth = useShapes((s) => s.azimuth);
   const height = useShapes((s) => s.height);
   const distance = useShapes((s) => s.distance);
-  const showLabels = useShapes((s) => s.showLabels);
+  const showLabels = useShapes(labelsVisible);
   const setLightFromFloor = useShapes((s) => s.setLightFromFloor);
   const position = lightPosition(azimuth, height, distance);
-  const vp = vanishingPoint(azimuth, distance);
 
-  // The bulb hangs in the air, so a click on it lands on the floor well past the
-  // vanishing point. Track that gap and the bulb follows the cursor instead of
-  // leaping to meet it.
+  // Everything you can grab moves on the FLOOR — one rule for the whole scene.
+  // Height is its own handle on the vertical, so no single drag ever has to mean
+  // two things at once.
   const grab = useRef([0, 0]);
   const { handlers, active } = useFloorDrag({
     enabled: true,
-    onStart: (x, z) => {
-      grab.current = [x - vp[0], z - vp[2]];
+    priority: LIGHT_PRIORITY,
+    onStart: (x, _y, z) => {
+      grab.current = [x - position[0], z - position[2]];
     },
-    onMove: (x, z) => setLightFromFloor(x - grab.current[0], z - grab.current[1]),
+    onMove: (x, _y, z) => setLightFromFloor(x - grab.current[0], z - grab.current[1]),
   });
 
   return (
@@ -45,11 +45,17 @@ export function Lighting() {
         intensity={2.5}
         decay={0}
         castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0006}
-        shadow-normalBias={0.022}
-        shadow-camera-near={0.4}
-        shadow-camera-far={90}
+        // A point light's shadow is a cube map, and three filters it with a
+        // 9-tap kernel spread by shadow.radius. Left at its default of 1 the
+        // taps land inside a single texel, so the edge keeps the shadow map's
+        // staircase. Widening the kernel is what actually smooths it; the map
+        // size just decides how big the steps are underneath.
+        shadow-mapSize={[1536, 1536]}
+        shadow-radius={4}
+        shadow-bias={-0.0009}
+        shadow-normalBias={0.03}
+        shadow-camera-near={0.8}
+        shadow-camera-far={150}
       />
 
       {/* Soft fill so the unlit side reads as shade rather than a black hole. */}
@@ -57,9 +63,10 @@ export function Lighting() {
       <ambientLight intensity={0.18} />
 
       <group position={position}>
-        {/* Generous invisible grab volume — the bulb itself is a small target. */}
-        <mesh {...handlers} visible={false}>
-          <sphereGeometry args={[1.5, 16, 16]} />
+        {/* A big, forgiving grab volume. It can safely overlap shapes standing
+            under the light, because shapes outrank the light's handles. */}
+        <mesh {...handlers} visible={false} userData={{ dragPriority: LIGHT_PRIORITY }}>
+          <sphereGeometry args={[1.7, 16, 16]} />
         </mesh>
         <mesh>
           <sphereGeometry args={[0.6, 24, 24]} />

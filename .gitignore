@@ -9,3 +9,7 @@ node_modules/
 
 # Logs
 *.log
+
+# Vercel CLI
+.vercel
+.env*

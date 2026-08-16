@@ -1,4 +1,5 @@
 import { Canvas } from "@react-three/fiber";
+import { useShapes } from "./shapesStore";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { Lighting } from "./scene/Lighting";
@@ -12,6 +13,8 @@ const BG = "#eef0f3";
 
 /** The lighting studio: one shape, one movable bulb, and a clean shadow floor. */
 export function ShapesStudio() {
+  const locked = useShapes((s) => s.locked);
+
   return (
     <Canvas
       shadows
@@ -20,7 +23,7 @@ export function ShapesStudio() {
         antialias: true,
         toneMapping: THREE.ACESFilmicToneMapping,
       }}
-      camera={{ position: [11, 9, 16], fov: 36, near: 0.1, far: 400 }}
+      camera={{ position: [11, 9, 16], fov: 36, near: 0.1, far: 900 }}
       onCreated={({ gl, scene }) => {
         gl.shadowMap.enabled = true;
         gl.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -38,11 +41,12 @@ export function ShapesStudio() {
 
       <OrbitControls
         makeDefault
+        enabled={!locked}
         target={[0, 1.6, 0]}
         enableDamping
         dampingFactor={0.08}
         minDistance={6}
-        maxDistance={130}
+        maxDistance={260}
         maxPolarAngle={Math.PI * 0.49}
       />
     </Canvas>

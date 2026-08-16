@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { TransformControls } from "@react-three/drei";
-import { useStore } from "../store";
+import { useStore, gizmoEnabled } from "../store";
 
 /**
  * A rotation gizmo attached to the currently-selected bone. Drag the coloured
@@ -15,7 +15,8 @@ export function PoseGizmo() {
   const bones = useStore((s) => s.bones);
   const selected = useStore((s) => s.selected);
   const bump = useStore((s) => s.bump);
-  const bone = selected ? bones[selected] : null;
+  const enabled = useStore(gizmoEnabled);
+  const bone = enabled && selected ? bones[selected] : null;
   const ref = useRef();
 
   useEffect(() => {

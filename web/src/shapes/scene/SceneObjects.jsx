@@ -1,13 +1,107 @@
 import { createElement, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useShapes } from "../shapesStore";
-import { SHAPES } from "../shapes";
-import { useFloorDrag } from "./useFloorDrag";
+import { SHAPES, OBJECT_LIFT, footprintRadius } from "../shapes";
+import { useFloorDrag, SHAPE_PRIORITY } from "./useFloorDrag";
 
 /** Radius of the ring drawn under a shape, from its own footprint. */
 function footprint(frame) {
   if (!frame) return 2;
-  const { min, max } = frame.bounds;
-  return Math.max(Math.hypot(Math.max(-min[0], max[0]), Math.max(-min[2], max[2])) * 1.18, 1.2);
+  return Math.max(footprintRadius(frame) * 1.34, 1.2);
+}
+
+/**
+ * The spin ring: a turntable on the floor around the selected shape.
+ *
+ * It drags in the shape's OWN horizontal plane, not the floor's — otherwise a
+ * lifted shape's ring and your cursor disagree by however high it is floating.
+ * The notch on the rim shows which way the shape is facing.
+ */
+function SpinHandle({ object, radius }) {
+  const setObjectRotation = useShapes((s) => s.setObjectRotation);
+  const grab = useRef(0);
+  const bearing = (x, z) => Math.atan2(x - object.position[0], z - object.position[1]);
+
+  const { handlers, active, hovered } = useFloorDrag({
+    enabled: true,
+    mode: "level",
+    anchor: [object.position[0], object.elevation, object.position[1]],
+    priority: SHAPE_PRIORITY,
+    onStart: (x, _y, z) => {
+      grab.current = bearing(x, z) - object.rotation;
+    },
+    onMove: (x, _y, z) => setObjectRotation(object.id, bearing(x, z) - grab.current),
+  });
+
+  const lit = active || hovered;
+
+  return (
+    <group position={[0, 0.04, 0]}>
+      {/* Grab area: an annulus, so pressing the shape itself still moves it. */}
+      <mesh {...handlers} rotation={[-Math.PI / 2, 0, 0]} visible={false} userData={{ dragPriority: SHAPE_PRIORITY }}>
+        <ringGeometry args={[radius - 0.45, radius + 0.45, 40]} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} renderOrder={18}>
+        <ringGeometry args={[radius, radius + (lit ? 0.14 : 0.09), 64]} />
+        <meshBasicMaterial
+          color={lit ? "#5fd3c7" : "#3f8a83"}
+          transparent
+          opacity={lit ? 0.95 : 0.6}
+          toneMapped={false}
+          depthWrite={false}
+        />
+      </mesh>
+      {/* Which way it is facing. */}
+      <mesh position={[0, 0.01, radius + 0.34]} renderOrder={19}>
+        <sphereGeometry args={[0.15, 12, 12]} />
+        <meshBasicMaterial color={lit ? "#5fd3c7" : "#3f8a83"} toneMapped={false} fog={false} />
+      </mesh>
+    </group>
+  );
+}
+
+/**
+ * The lift handle: a collar above the selected shape that raises and lowers it.
+ *
+ * Same shape and behaviour as the bulb's height collar, for the same reason —
+ * one grab, one job. Dragging the shape itself walks it across the floor; this
+ * takes it up, and it snaps onto whatever it is standing over so a stack lands
+ * square.
+ */
+function LiftHandle({ object, top }) {
+  const setObjectElevation = useShapes((s) => s.setObjectElevation);
+  const anchor = [object.position[0], object.elevation + top + 0.95, object.position[1]];
+  const grab = useRef(0);
+
+  const { handlers, active, hovered } = useFloorDrag({
+    enabled: true,
+    mode: "facing",
+    anchor,
+    priority: SHAPE_PRIORITY,
+    onStart: (_x, y) => {
+      grab.current = y - object.elevation;
+    },
+    onMove: (_x, y) => setObjectElevation(object.id, y - grab.current),
+  });
+
+  const lit = active || hovered;
+
+  return (
+    <group position={[0, top + 0.95, 0]}>
+      <mesh {...handlers} visible={false} userData={{ dragPriority: SHAPE_PRIORITY }}>
+        <sphereGeometry args={[0.85, 12, 12]} />
+      </mesh>
+      <mesh rotation={[Math.PI / 2, 0, 0]} renderOrder={20}>
+        <torusGeometry args={[0.42, lit ? 0.09 : 0.065, 10, 36]} />
+        <meshBasicMaterial color={lit ? "#5fd3c7" : "#2f6f6a"} toneMapped={false} fog={false} />
+      </mesh>
+      {[0.3, -0.3].map((dy) => (
+        <mesh key={dy} position={[0, dy, 0]} renderOrder={20}>
+          <sphereGeometry args={[0.08, 10, 10]} />
+          <meshBasicMaterial color={lit ? "#5fd3c7" : "#2f6f6a"} toneMapped={false} fog={false} />
+        </mesh>
+      ))}
+    </group>
+  );
 }
 
 /**
@@ -19,7 +113,7 @@ function footprint(frame) {
  * a shape around costs one position update rather than re-walking a few hundred
  * vertices, and a second cube reuses the first one's sample.
  */
-function SceneShape({ object, selected }) {
+function SceneShape({ object, selected, frameView, locked }) {
   const setShapeFrame = useShapes((s) => s.setShapeFrame);
   const setObjectPosition = useShapes((s) => s.setObjectPosition);
   const selectObject = useShapes((s) => s.selectObject);
@@ -33,11 +127,12 @@ function SceneShape({ object, selected }) {
   const grab = useRef([0, 0]);
   const { handlers, active, hovered } = useFloorDrag({
     enabled: true,
-    onStart: (x, z) => {
+    priority: SHAPE_PRIORITY,
+    onStart: (x, _y, z) => {
       selectObject(object.id);
       grab.current = [x - object.position[0], z - object.position[1]];
     },
-    onMove: (x, z) => setObjectPosition(object.id, x - grab.current[0], z - grab.current[1]),
+    onMove: (x, _y, z) => setObjectPosition(object.id, x - grab.current[0], z - grab.current[1]),
   });
 
   useLayoutEffect(() => {
@@ -72,25 +167,46 @@ function SceneShape({ object, selected }) {
 
   const ring = footprint(frame);
 
+  const top = frame ? frame.bounds.max[1] : 2.6;
+
   return (
-    <group position={[object.position[0], 0, object.position[1]]}>
-      <mesh ref={mesh} position={[0, lift, 0]} castShadow receiveShadow {...handlers}>
+    <group
+      position={[object.position[0], object.elevation, object.position[1]]}
+      rotation={[0, object.rotation, 0]}
+    >
+      <mesh
+        ref={mesh}
+        position={[0, lift, 0]}
+        castShadow
+        receiveShadow
+        userData={{ dragPriority: SHAPE_PRIORITY }}
+        {...handlers}
+      >
         {createElement(def.geom[0], { args: def.geom[1] })}
         <meshStandardMaterial color={def.color} metalness={0.15} roughness={0.4} />
       </mesh>
 
-      {/* Selection / grab affordance. */}
-      {(selected || hovered || active) && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]} renderOrder={17}>
-          <ringGeometry args={[ring, ring + 0.17, 56]} />
-          <meshBasicMaterial
-            color={selected ? "#2f6f6a" : "#7a8494"}
-            transparent
-            opacity={active ? 0.9 : selected ? 0.66 : 0.4}
-            toneMapped={false}
-            depthWrite={false}
-          />
-        </mesh>
+      {selected && !frameView && !locked && (
+        <>
+          <LiftHandle object={object} top={top} />
+          <SpinHandle object={object} radius={ring + 0.55} />
+        </>
+      )}
+
+      {/* Always drawn, so every shape looks grabbable without having to go
+          hunting for the one that lights up — except in practice mode, where it
+          would be one more thing on a picture meant to be clean. */}
+      {(!frameView || active) && (
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]} renderOrder={17}>
+        <ringGeometry args={[ring, ring + (selected ? 0.19 : 0.13), 56]} />
+        <meshBasicMaterial
+          color={selected ? "#2f6f6a" : "#8b94a2"}
+          transparent
+          opacity={active ? 0.92 : hovered ? 0.6 : selected ? 0.7 : 0.24}
+          toneMapped={false}
+          depthWrite={false}
+        />
+      </mesh>
       )}
     </group>
   );
@@ -100,9 +216,20 @@ function SceneShape({ object, selected }) {
 export function SceneObjects() {
   const objects = useShapes((s) => s.objects);
   const selectedId = useShapes((s) => s.selectedId);
+  const frameView = useShapes((s) => s.frameView);
+  const locked = useShapes((s) => s.locked);
 
   return useMemo(
-    () => objects.map((object) => <SceneShape key={object.id} object={object} selected={object.id === selectedId} />),
-    [objects, selectedId],
+    () =>
+      objects.map((object) => (
+        <SceneShape
+          key={object.id}
+          object={object}
+          selected={object.id === selectedId}
+          frameView={frameView}
+          locked={locked}
+        />
+      )),
+    [objects, selectedId, frameView, locked],
   );
 }
