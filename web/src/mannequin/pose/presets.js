@@ -4,6 +4,8 @@
 // cumulative. They are deliberately gentle "starting points"; the exact look
 // depends on the rig's axis conventions, so fine-tune with the sliders/gizmo.
 
+import { buildPose } from "./anatomy";
+
 const d = (deg) => (deg * Math.PI) / 180;
 
 export const PRESETS = [
@@ -59,18 +61,33 @@ export const PRESETS = [
     id: "run",
     label: "Run",
     icon: "🏃",
-    pose: {
-      body: [d(12), d(6), 0],
-      l_thigh: [d(-45), 0, 0],
-      r_thigh: [d(30), 0, 0],
-      l_shin: [d(25), 0, 0],
-      r_shin: [d(70), 0, 0],
-      l_shoulder: [0, 0, d(-40)],
-      r_shoulder: [0, 0, d(40)],
-      l_forearm: [d(80), 0, 0],
-      r_forearm: [d(80), 0, 0],
-      head: [d(-8), 0, 0],
-    },
+    // Authored through the calibrated anatomy engine (T-pose rest): arms must be
+    // LOWERED to the sides before swinging, and the knee hinge is -X. The old
+    // raw-euler version rotated the still-horizontal arms overhead and bent the
+    // knees backward. Mid-stride: right leg drives forward, left trails; arms
+    // swing in opposition (left forward / right back) with bent elbows.
+    pose: buildPose((a) => {
+      a.bendForward(15); // torso pitched into the run
+      a.twist(-6); // slight counter-rotation, left shoulder forward
+
+      // Legs — right drives up-and-forward, left pushes off behind.
+      a.hipFlex("r", 52);
+      a.knee("r", 70);
+      a.ankle("r", 10);
+      a.hipExtend("l", 30);
+      a.knee("l", 55);
+      a.ankle("l", -25); // plantarflex — toe-off
+
+      // Arms — down at the sides, then opposite swing with ~90° elbows.
+      a.lowerArm("l", 80);
+      a.lowerArm("r", 80);
+      a.armForward("l", 40);
+      a.armBack("r", 40);
+      a.elbow("l", 90);
+      a.elbow("r", 90);
+
+      a.headNod(-6); // eyes up, looking ahead
+    }),
   },
   {
     id: "think",
