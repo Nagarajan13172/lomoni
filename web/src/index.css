@@ -48,9 +48,10 @@
   --color-blue-pale: #c8dcec; /* tinted product surface */
   --color-blue-wash: #e8f1f8; /* faintest fill          */
 
-  /* accent for dark surfaces. --color-coral is navy, so on the ink
-     footer it collapses to 1.9:1 — dark bands take the light end of
-     the ramp instead (7.4:1 on ink). Same hue family, inverted. */
+  /* Reserved for dark surfaces. The page is light throughout, but
+     --color-coral is navy and collapses to 1.6:1 on ink — so any dark
+     band added later must take its accent from here (6.4:1 on ink),
+     never from coral. */
   --color-accent-soft: #93b8d6;
 
   /* warm accents — the three swatch dots; one per view */
@@ -377,16 +378,6 @@
 /* LOMONI wordmark — navy ramp, clipped to the letterforms. */
 .brandmark {
   background-image: linear-gradient(135deg, #2e6fa8 0%, #1b5183 48%, #12314f 100%);
-  background-size: cover;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Same wordmark on a dark band — the navy ramp would disappear into
-   the ink footer, so it runs white → light blue instead. */
-.brandmark-invert {
-  background-image: linear-gradient(135deg, #ffffff 0%, #d6e6f2 52%, #93b8d6 100%);
   background-size: cover;
   -webkit-background-clip: text;
   background-clip: text;

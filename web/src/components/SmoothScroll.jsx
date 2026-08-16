@@ -22,10 +22,14 @@ export default function SmoothScroll({ disabled = false }) {
   useEffect(() => {
     if (off) return;
     lenis = new Lenis({
-      duration: 1.1,
+      // Longer glide with a slightly damped wheel — the page settles into
+      // place rather than snapping to it. Kept under ~1.7s so it still
+      // feels responsive to a deliberate scroll.
+      duration: 1.65,
+      wheelMultiplier: 0.85,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      touchMultiplier: 1.6,
+      touchMultiplier: 1.35,
     });
     let raf = 0;
     const loop = (time) => {
