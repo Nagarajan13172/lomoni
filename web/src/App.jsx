@@ -17,22 +17,14 @@ const Shapes = lazy(() => import("./pages/Shapes"));
 
 // Tool fallback fills the playground's main area while three.js loads.
 const toolFallback = <div className="h-full w-full" />;
-import VariationsIndex from "./variations/VariationsIndex";
-import V1 from "./variations/V1";
-import V2 from "./variations/V2";
-import V3 from "./variations/V3";
-import V4 from "./variations/V4";
+
+// The design variations (/variations, /v1–/v4) are not part of the public
+// site. Their components still live in src/variations/ — unrouted, so they
+// are no longer bundled — and can be wired back up when needed.
 
 export default function App() {
   return (
     <Routes>
-      {/* Design variations — full-bleed, each its own design world */}
-      <Route path="/variations" element={<VariationsIndex />} />
-      <Route path="/v1" element={<V1 />} />
-      <Route path="/v2" element={<V2 />} />
-      <Route path="/v3" element={<V3 />} />
-      <Route path="/v4" element={<V4 />} />
-
       {/* Main route-based site */}
       <Route element={<Layout />}>
         <Route index element={<Home />} />

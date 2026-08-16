@@ -66,11 +66,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-ink/10 pt-6 text-sm text-ink-soft sm:flex-row sm:items-center">
+        <div className="mt-14 border-t border-ink/10 pt-6 text-sm text-ink-soft">
           <p>{site.footerNote}</p>
-          <Link to="/variations" className="transition-colors hover:text-coral">
-            Explore design variations →
-          </Link>
         </div>
       </div>
     </footer>
