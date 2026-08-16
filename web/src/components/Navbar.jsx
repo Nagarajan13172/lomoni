@@ -35,18 +35,13 @@ export default function Navbar() {
             </span>
           </Link>
 
-          <ul className="hidden items-center gap-8 lg:flex">
+          {/* Active state is driven by NavLink's aria-current="page", which
+              `.nav-link` styles directly — the rule under the current item
+              is then announced as well as drawn. */}
+          <ul className="hidden items-center gap-9 lg:flex">
             {nav.map((n) => (
               <li key={n.to}>
-                <NavLink
-                  to={n.to}
-                  end={n.to === "/"}
-                  className={({ isActive }) =>
-                    `text-sm font-medium transition-colors hover:text-coral ${
-                      isActive ? "text-coral" : "text-ink"
-                    }`
-                  }
-                >
+                <NavLink to={n.to} end={n.to === "/"} className="nav-link">
                   {n.label}
                 </NavLink>
               </li>

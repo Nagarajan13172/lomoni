@@ -14,8 +14,8 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <img src="/images/logo.png" alt="" className="h-11 w-11 rounded-full bg-paper" />
               <div className="font-display text-lg font-bold leading-tight">
-                <span className="brandmark">LOMONI</span>
-                <span className="block text-[11px] font-semibold tracking-[0.2em] text-coral">
+                <span className="brandmark-invert">LOMONI</span>
+                <span className="block text-[11px] font-semibold tracking-[0.2em] text-accent-soft">
                   ROAD TO D-SCHOOL
                 </span>
               </div>
@@ -23,7 +23,7 @@ export default function Footer() {
             <p className="mt-6 max-w-sm text-lg text-paper/70">{site.mission}</p>
             <Link
               to="/contact"
-              className="btn mt-7 border-paper bg-coral text-white"
+              className="btn mt-7 border-paper bg-paper text-ink"
             >
               Book free counselling <Arrow />
             </Link>
@@ -31,11 +31,11 @@ export default function Footer() {
 
           {/* Nav */}
           <div>
-            <p className="eyebrow text-coral">Explore</p>
+            <p className="eyebrow text-accent-soft">Explore</p>
             <ul className="mt-5 space-y-3">
               {nav.map((n) => (
                 <li key={n.to}>
-                  <Link to={n.to} className="text-paper/75 transition-colors hover:text-coral">
+                  <Link to={n.to} className="text-paper/75 transition-colors hover:text-accent-soft">
                     {n.label}
                   </Link>
                 </li>
@@ -45,14 +45,14 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <p className="eyebrow text-coral">Reach us</p>
+            <p className="eyebrow text-accent-soft">Reach us</p>
             <ul className="mt-5 space-y-3 text-paper/75">
               <li>
                 <a href={`mailto:${site.email}`} className="link-underline">{site.email}</a>
               </li>
               {site.phones.map((p) => (
                 <li key={p.raw}>
-                  <a href={`tel:${p.raw}`} className="hover:text-coral">{p.number}</a>
+                  <a href={`tel:${p.raw}`} className="hover:text-accent-soft">{p.number}</a>
                   <span className="ml-2 text-xs text-paper/40">{p.label}</span>
                 </li>
               ))}
@@ -68,7 +68,7 @@ export default function Footer() {
 
         <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-paper/15 pt-6 text-sm text-paper/45 sm:flex-row sm:items-center">
           <p>{site.footerNote}</p>
-          <Link to="/variations" className="text-paper/55 transition-colors hover:text-coral">
+          <Link to="/variations" className="text-paper/55 transition-colors hover:text-accent-soft">
             Explore design variations →
           </Link>
         </div>

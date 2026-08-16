@@ -2,57 +2,76 @@
 
 /* ----------------------------------------------------------------
    LOMONI Design Studio — Design tokens
-   Style: Editorial / Creative-Studio (Brutalism + Motion-Driven)
+   Style: "Studio Blue" — calm editorial commerce.
    Type:  Space Grotesk (display) + DM Sans (body)
-   Palette: extracted from the paper-craft logo lockups — three
-   families, kraft (warm paper), espresso (the wordmark), and taupe
-   (the cool facets of the "M" / icosahedron), on the cool studio
-   white the mockups are photographed against.
 
-   NOTE: the primary accent still lives on the `--color-coral` token
-   (kept by name to avoid a site-wide class rename). Its value is the
-   AA-safe end of the kraft ramp — `--color-coral` is used as a *text*
-   colour in ~27 places, and the logo's true camel (`--color-kraft`,
-   #b98f63) only reaches 2.9:1 on paper. Use `--color-kraft` for
-   fills, shapes and large areas; `--color-coral` for anything with
-   text in it.
+   Palette drawn from the product-hero reference: one deep navy
+   carrying every piece of text and every primary action, a ramp of
+   dusty blues used only as *shapes* (the spotlight circle, the arc
+   bleeding off the frame), and two warm dots — amber and clay — as
+   the single point of heat. No pure black and no pure white page:
+   ink is navy-tinted, paper is a cool off-white.
+
+   Two rules this file enforces:
+   1. Blues below --color-coral are decorative only. They never carry
+      text. Anything with text in it uses ink / ink-soft / coral.
+   2. The warm ramp (amber, clay, kraft) is the accent of last resort
+      — one warm element per view, mirroring the reference's three
+      swatch dots. --color-kraft is retained as the bridge to the
+      paper-craft logo, which is brown.
+
+   NOTE: the primary still lives on --color-coral (kept by name to
+   avoid a site-wide class rename). It is used as a *text* colour in
+   ~27 places, so it holds the navy, not one of the lighter blues.
 ----------------------------------------------------------------- */
 @theme {
-  /* ink = the espresso wordmark */
-  --color-ink: #241c17;
-  --color-ink-soft: #4a3b31;
+  /* ink — navy-tinted, never neutral black */
+  --color-ink: #12314f;      /* 13.0:1 on paper */
+  --color-ink-soft: #4f6b86; /*  5.4:1 on paper, 4.7:1 on paper-deep —
+                                 tuned against the *tinted* surfaces, not
+                                 white, so muted text stays legible on the
+                                 blue-washed panels too */
 
-  /* paper = the cool studio backdrop, with a warm kraft-paper tint */
-  --color-paper: #f5f5f6;
-  --color-paper-alt: #e9e9ec;
-  --color-paper-deep: #f3ede4;
+  /* paper — cool off-white ground, blue-washed surfaces */
+  --color-paper: #fbfcfd;
+  --color-paper-alt: #eef3f8;
+  --color-paper-deep: #e3edf5;
   --color-card: #ffffff;
 
-  /* primary = kraft, text-safe end of the ramp */
-  --color-coral: #8a6540;
-  --color-coral-deep: #6e4f33;
+  /* primary — the headline / ADD TO CART navy */
+  --color-coral: #1b5183;      /* 7.9:1 on paper · 8.2:1 behind white */
+  --color-coral-deep: #123a61; /* hover / pressed */
 
-  /* kraft ramp — the logo's own paper tones, for fills & shapes */
-  --color-kraft: #b98f63;
-  --color-kraft-light: #cdaf8b;
-  --color-sand: #e3d3bc;
+  /* blue ramp — SHAPES ONLY. Never put text on or in these. */
+  --color-blue: #6f9cc4;      /* the spotlight circle   */
+  --color-blue-soft: #93b8d6; /* the arc off the frame  */
+  --color-blue-pale: #c8dcec; /* tinted product surface */
+  --color-blue-wash: #e8f1f8; /* faintest fill          */
 
-  /* secondary = the cool taupe facets */
-  --color-taupe: #8e8983;
-  --color-taupe-light: #b4afa9;
-  --color-taupe-deep: #635f5a;
+  /* accent for dark surfaces. --color-coral is navy, so on the ink
+     footer it collapses to 1.9:1 — dark bands take the light end of
+     the ramp instead (7.4:1 on ink). Same hue family, inverted. */
+  --color-accent-soft: #93b8d6;
 
-  /* exam-track accents — muted earth hues, darkened so each works
-     both as text on paper and as a chip behind white text */
-  --color-track-purple: #8a5340; /* clay      */
-  --color-track-green: #566b3c;  /* olive     */
-  --color-track-yellow: #86641e; /* ochre     */
-  --color-track-blue: #4f6472;   /* slate     */
+  /* warm accents — the three swatch dots; one per view */
+  --color-amber: #e3a85c;
+  --color-clay: #ec9e88;
+  --color-kraft: #b98f63; /* bridge to the paper-craft logo */
+
+  /* exam-track accents — each clears 4.5:1 both as text on paper
+     and as a chip behind white text */
+  --color-track-blue: #1b5183;   /* navy   */
+  --color-track-green: #2a6e6c;  /* teal   */
+  --color-track-yellow: #8a6212; /* bronze */
+  --color-track-purple: #9e5b57; /* rose   */
 
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 
-  --radius-card: 1.5rem;
+  /* geometry — the reference is squared: rectangular CTA, softly
+     rounded cards, and circles reserved for the spotlight motif */
+  --radius-card: 0.875rem;
+  --radius-btn: 0.375rem;
 }
 
 @layer base {
@@ -122,47 +141,90 @@
     .container-x { padding-inline: 2.5rem; }
   }
 
-  /* Minimalist card — clean hairline border, no shadow */
+  /* Card — white panel lifting off the cool ground on a soft, tinted
+     shadow (the reference's floating hero card), hairline for edge
+     definition where the shadow is too faint to read. */
   .card-brutal {
     background: var(--color-card);
-    border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-coral) 10%, transparent);
     border-radius: var(--radius-card);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 5%, transparent),
+                0 12px 28px -18px color-mix(in srgb, var(--color-ink) 30%, transparent);
     transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-                border-color 0.25s ease;
+                border-color 0.25s ease,
+                box-shadow 0.25s ease;
   }
   .card-brutal:hover {
     transform: translateY(-3px);
-    border-color: color-mix(in srgb, var(--color-ink) 22%, transparent);
+    border-color: color-mix(in srgb, var(--color-coral) 24%, transparent);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 6%, transparent),
+                0 22px 42px -24px color-mix(in srgb, var(--color-ink) 38%, transparent);
   }
 
-  /* Primary pill button */
+  /* Rectangular CTA — the reference's ADD TO CART: squared corners,
+     uppercase, wide tracking, small type. min-height keeps the touch
+     target at 48px even though the label is only 0.78rem. */
   .btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 48px;
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 0.95rem;
-    padding: 0.85rem 1.6rem;
-    border-radius: 999px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    padding: 0.85rem 1.9rem;
+    border-radius: var(--radius-btn);
     border: 1.5px solid var(--color-ink);
-    transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+    transition: transform 0.18s ease, background-color 0.18s ease,
+                color 0.18s ease, box-shadow 0.18s ease;
     cursor: pointer;
   }
   .btn-primary {
     background: var(--color-coral);
     color: #fff;
     border-color: var(--color-coral);
+    box-shadow: 0 10px 22px -14px color-mix(in srgb, var(--color-coral) 90%, transparent);
   }
-  .btn-primary:hover { transform: translateY(-2px); background: var(--color-coral-deep); border-color: var(--color-coral-deep); }
-  .btn-ghost { background: transparent; color: var(--color-ink); }
-  .btn-ghost:hover { background: var(--color-ink); color: var(--color-paper); }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    background: var(--color-coral-deep);
+    border-color: var(--color-coral-deep);
+    box-shadow: 0 16px 28px -16px color-mix(in srgb, var(--color-coral) 90%, transparent);
+  }
+
+  /* Secondary — the reference pairs its CTA with a bare text action
+     ("VIEW ALL PRODUCT"), not a second button. The underline stays
+     visible at rest so it still reads as interactive. */
+  .btn-ghost {
+    position: relative;
+    background: transparent;
+    color: var(--color-ink-soft);
+    border-color: transparent;
+    padding-inline: 0.25rem;
+  }
+  .btn-ghost::after {
+    content: "";
+    position: absolute;
+    left: 0.25rem;
+    right: 0.25rem;
+    bottom: 0.7rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.35;
+    transition: opacity 0.18s ease;
+  }
+  .btn-ghost:hover { color: var(--color-coral); }
+  .btn-ghost:hover::after { opacity: 1; }
 
   /* Form inputs */
   .inp {
     width: 100%;
+    min-height: 48px;
     border: 1.5px solid color-mix(in srgb, var(--color-ink) 25%, transparent);
-    border-radius: 0.85rem;
+    border-radius: var(--radius-btn);
     background: var(--color-paper);
     padding: 0.75rem 0.95rem;
     font-family: var(--font-sans);
@@ -185,31 +247,99 @@
     transition: background-size 0.3s ease;
   }
   .link-underline:hover { background-size: 100% 2px; }
+
+  /* Primary nav — the reference's small uppercase set with a rule
+     under the current item. The rule is drawn on both hover and the
+     active route, so "where I am" and "where this goes" share one
+     visual language. */
+  .nav-link {
+    position: relative;
+    display: inline-block;
+    padding-block: 0.55rem;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-ink);
+    transition: color 0.2s ease;
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-coral);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .nav-link:hover { color: var(--color-coral); }
+  .nav-link:hover::after,
+  .nav-link[aria-current="page"]::after { transform: scaleX(1); }
+  .nav-link[aria-current="page"] { color: var(--color-coral); }
 }
 
-/* Diagonal brand-stripe motif (recreated crisply in CSS) */
+/* ----------------------------------------------------------------
+   Spotlight motif — the reference stages its subject on a flat
+   circle of colour, with a second, much larger circle cropped by the
+   right edge of the frame. Both are pure geometry: no gradient, no
+   blur, no shadow. That flatness is what keeps it feeling like a
+   studio backdrop rather than a glow.
+----------------------------------------------------------------- */
+.hero-orb {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: min(80%, 27rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-blue);
+  pointer-events: none;
+}
+
+.hero-arc {
+  position: absolute;
+  right: -16vw;
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(60vw, 46rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-blue-soft);
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+/* Diagonal brand-stripe motif — retoned to the blue ramp with the two
+   warm dots as the only heat, so it reads as one family rather than
+   five competing hues. */
 .stripes-motif {
   background-image: repeating-linear-gradient(
     -45deg,
     var(--color-coral) 0 14px,
     transparent 14px 46px,
-    var(--color-track-purple) 46px 60px,
+    var(--color-blue) 46px 60px,
     transparent 60px 92px,
-    var(--color-track-green) 92px 106px,
+    var(--color-amber) 92px 106px,
     transparent 106px 138px,
-    var(--color-track-yellow) 138px 152px,
+    var(--color-blue-soft) 138px 152px,
     transparent 152px 184px,
-    var(--color-track-blue) 184px 198px,
+    var(--color-clay) 184px 198px,
     transparent 198px 230px
   );
 }
 
+/* Grain is kept as a whisper only — the reference surface is perfectly
+   clean, and anything heavier muddies the flat blues. */
 .grain {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 60;
-  opacity: 0.035;
+  opacity: 0.015;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -234,24 +364,31 @@
 }
 
 /* ================================================================
-   Cardboard brand accents (white ground · cardboard-brown primary)
-   `--hero-glow` tints the soft spotlight behind the busts to match the
-   primary. `.brandmark` fills the LOMONI wordmark with kraft-paper
-   texture — the "cardboard font".
+   Brand accents. `--hero-glow` tints the soft light bloom sitting
+   between the flat spotlight circle and the sculpture. `.brandmark`
+   fills the LOMONI wordmark — the kraft-paper texture that fill used
+   to carry is dropped here, because grain reads as dirt over flat
+   blue; the wordmark now runs the navy ramp cleanly.
    ---------------------------------------------------------------- */
 :root {
-  --hero-glow: rgba(185, 143, 99, 0.18);
+  --hero-glow: rgba(111, 156, 196, 0.3);
 }
 
-/* Folded-cardboard wordmark — LOMONI letters filled with kraft paper. */
+/* LOMONI wordmark — navy ramp, clipped to the letterforms. */
 .brandmark {
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E"),
-    linear-gradient(135deg, #cdaf8b 0%, #9a7048 46%, #5e4229 100%);
-  background-blend-mode: multiply;
+  background-image: linear-gradient(135deg, #2e6fa8 0%, #1b5183 48%, #12314f 100%);
   background-size: cover;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* Same wordmark on a dark band — the navy ramp would disappear into
+   the ink footer, so it runs white → light blue instead. */
+.brandmark-invert {
+  background-image: linear-gradient(135deg, #ffffff 0%, #d6e6f2 52%, #93b8d6 100%);
+  background-size: cover;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

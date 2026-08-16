@@ -9,7 +9,7 @@ export default function Marquee() {
           {run.map((w, i) => (
             <span key={i} className="mx-6 inline-flex items-center font-display text-2xl font-bold tracking-tight md:text-3xl">
               {w}
-              <span className="ml-12 text-coral">✶</span>
+              <span className="ml-12 text-accent-soft">✶</span>
             </span>
           ))}
         </div>

@@ -36,6 +36,11 @@ export default function Home() {
     <>
       {/* ---------------- HERO (8-col grid — content left, 3D bust right) ---------------- */}
       <section className="relative -mt-[68px] overflow-hidden pt-[68px]">
+        {/* Oversized circle cropped by the right edge of the viewport — the
+            reference's staging device. Sits outside container-x so it can
+            bleed past the content gutter. */}
+        <div className="hero-arc hidden md:block" aria-hidden="true" />
+
         <div className="container-x">
           <div className="grid min-h-[84vh] grid-cols-1 items-center gap-x-8 gap-y-10 md:grid-cols-8 md:gap-y-0">
             {/* LEFT — content: 4 of 8 columns */}
@@ -44,13 +49,16 @@ export default function Home() {
                 <Eyebrow>Mentorship by NID · NIFT · IIT alumni</Eyebrow>
               </Reveal>
 
+              {/* One colour across the whole headline, as in the reference —
+                  hierarchy comes from scale and whitespace, and the accent is
+                  spent on the eyebrow rule and the CTA instead. */}
               <h1 className="display-xl mt-7">
                 <MaskReveal mount>Road</MaskReveal>
                 <MaskReveal mount delay={0.09}>
                   to
                 </MaskReveal>
                 <MaskReveal mount delay={0.18}>
-                  <span className="text-coral">D-School</span>
+                  D-School
                 </MaskReveal>
               </h1>
 
@@ -85,14 +93,17 @@ export default function Home() {
               </Reveal>
             </div>
 
-            {/* RIGHT — interactive paper-bust sculpture: 4 of 8 columns */}
+            {/* RIGHT — interactive paper-bust sculpture: 4 of 8 columns.
+                Staged the way the reference stages its product: a flat
+                circle of colour, a soft bloom to lift the subject off it,
+                then the subject. Nothing else competes. */}
             <div className="relative h-[48vh] min-h-[320px] md:col-span-4 md:h-[84vh]">
-              {/* soft spotlight behind the sculpture */}
+              <div className="hero-orb" aria-hidden="true" />
               <div
                 className="pointer-events-none absolute inset-0"
-                style={{ background: "radial-gradient(circle at 58% 44%, var(--hero-glow), transparent 60%)" }}
+                style={{ background: "radial-gradient(circle at 50% 46%, var(--hero-glow), transparent 62%)" }}
+                aria-hidden="true"
               />
-              <div className="stripes-motif pointer-events-none absolute right-2 top-6 hidden h-[320px] w-[200px] rotate-6 opacity-[0.10] md:block" />
               <HeroBust className="absolute inset-0" src="/models/luwai_HD_1783280040963.glb" rotation={[0, 0, 0]} />
             </div>
           </div>
