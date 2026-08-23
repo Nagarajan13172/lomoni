@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.uceed.iitb.ac.in)",
+      "WebFetch(domain:www.ceed.iitb.ac.in)",
+      "WebFetch(domain:nift.ac.in)",
+      "WebFetch(domain:admissions.nid.edu)",
+      "Bash(npm run *)",
+      "Bash(node -e ' *)",
+      "Bash(node --input-type=module -e ' *)"
+    ]
+  }
+}

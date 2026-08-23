@@ -46,7 +46,7 @@ export default function Home() {
             {/* LEFT — content: 4 of 8 columns */}
             <div className="relative z-10 flex flex-col justify-center md:col-span-4">
               <Reveal mount>
-                <Eyebrow>Mentorship by NID · NIFT · IIT alumni</Eyebrow>
+                <Eyebrow>Mentorship by NID &amp; NIFT alumni</Eyebrow>
               </Reveal>
 
               {/* One colour across the whole headline, as in the reference —

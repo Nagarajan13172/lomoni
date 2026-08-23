@@ -21,7 +21,7 @@ export const site = {
     { day: "Saturday", time: "9:30 am – 7:00 pm" },
     { day: "Sunday", time: "9:30 am – 7:00 pm" },
   ],
-  footerNote: "© 2023 by LOMONI Design Studio. Road To D-School",
+  footerNote: "© 2026 by LOMONI Design Studio. Road To D-School",
 };
 
 export const nav = [
@@ -40,7 +40,10 @@ export const home = {
   stats: [
     { value: "3", label: "Entrance exams covered" },
     { value: "6", label: "Degree tracks mentored" },
-    { value: "NID·NIFT·IIT", label: "Alumni mentors" },
+    // Kept in step with whoWeAre.team below, which lists NID and NIFT alumni
+    // only. If an IIT-alumni mentor joins the team, add them there and this
+    // can go back to "NID·NIFT·IIT".
+    { value: "NID·NIFT", label: "Alumni mentors" },
   ],
   whatWeDo:
     "We focus only on three design entrance exams — NID, NIFT and CEED/UCEED — for bachelor's and master's students. Individual training, workshops, skill development and portfolio building, guided by designers from NID and NIFT.",
@@ -179,17 +182,22 @@ export const courses = {
       "NID is internationally acclaimed as one of the finest educational and research institutions for Industrial, Communication, Textile and IT-Integrated (Experiential) Design — recognised as an Institution of National Importance.",
     eligibility:
       "Passed or currently appearing in the class 12 examination in any discipline (Science, Arts, Commerce, Humanities) from any recognised board such as CBSE, IB, ICSE or its equivalent.",
-    pattern: ["Preliminary Test", "Studio Test", "Interview"],
+    pattern: [
+      "DAT Prelims — qualifying / shortlisting only",
+      "DAT Mains — Studio Sensitivity Test",
+      "DAT Mains — In-Person Sensitivity Test",
+    ],
     programs: [
+      "Offered at NID Ahmedabad, Andhra Pradesh, Assam, Haryana & Madhya Pradesh",
       "Communication Design — Animation Film, Exhibition, Film & Video, Graphic",
       "Industrial Design — Ceramic & Glass, Product, Furniture",
       "Textile, Apparel, Lifestyle & Accessory Design",
     ],
     timeline: [
-      ["October", "Applications open"],
-      ["January", "Written exam"],
-      ["February", "Prelim results"],
-      ["Mar – May", "Studio test & interview"],
+      ["Oct – Nov", "Applications open"],
+      ["December", "DAT Prelims"],
+      ["Feb – Apr", "Prelims results"],
+      ["May", "DAT Mains"],
       ["May", "Final results"],
     ],
   },
@@ -200,24 +208,26 @@ export const courses = {
     degree: "B.Des",
     level: "Bachelor's",
     color: "var(--color-track-blue)",
-    institute: "Undergraduate Common Entrance Exam for Design",
+    institute: "Undergraduate Common Entrance Examination for Design",
     intro:
-      "The entrance test for the Bachelor of Design (B.Des) program at the IITs, conducted by IIT Bombay. Five IITs offer B.Des. Your UCEED score can also be used to apply to several private institutes.",
+      "The entrance test for the Bachelor of Design (B.Des) program at the IITs, conducted by IIT Bombay. Six IITs and IIITDM Jabalpur admit through UCEED, and your score is also accepted by 40+ other design institutes across India.",
     eligibility:
-      "Passed Class XII (or equivalent) in the previous year in all subjects, or appearing in the current year — in ANY stream.",
+      "Passed Class XII (or equivalent) in the previous year in all subjects, or appearing in the current year — in ANY stream. Maximum two attempts, and only in consecutive years. Age: you must not turn 25 before 1 October of the exam year (5-year relaxation for SC / ST / PwD).",
     pattern: ["Single stage · 3 hours", "Part A — computer based", "Part B — sketching"],
     programs: [
       "IIT Bombay — IDC School of Design",
       "IIT Delhi — Department of Design",
       "IIT Guwahati — Department of Design",
       "IIT Hyderabad — Department of Design",
+      "IIT Indore — School of Innovation",
+      "IIT Roorkee — Department of Design",
       "IIITDM Jabalpur — Design Discipline",
     ],
     timeline: [
-      ["Sep – Oct", "Applications open"],
+      ["Oct – Nov", "Applications open"],
       ["January", "Admit cards"],
-      ["Jan – Feb", "Examination"],
-      ["April", "Results"],
+      ["January", "Examination"],
+      ["March", "Results"],
     ],
   },
   "nift-bachelors": {
@@ -229,10 +239,15 @@ export const courses = {
     color: "var(--color-track-green)",
     institute: "National Institute of Fashion Technology",
     intro:
-      "NIFT was established in 1986 under the Ministry of Textiles, Government of India, and is a premier fashion-education institution with 17 campuses across India.",
+      "NIFT was established in 1986 under the Ministry of Textiles, Government of India, and is a premier fashion-education institution with 19 campuses across India.",
     eligibility:
-      "Less than 24 years as of 1st August of the admission year (5-year relaxation for SC/ST/PWD). 10+2 from a recognised board; B.F.Tech additionally requires Physics & Mathematics.",
-    pattern: ["B.Des — Creative Ability Test (CAT) + General Ability Test (GAT)", "B.F.Tech — GAT only", "Negative marking: 25% per wrong answer"],
+      "Not more than 24 years as of 1st August of the admission year (5-year relaxation for SC/ST/PwD). 10+2 from a recognised board; B.F.Tech additionally requires Physics & Mathematics.",
+    pattern: [
+      "B.Des — Creative Ability Test (CAT) + General Ability Test (GAT)",
+      "B.F.Tech — GAT only",
+      "B.Des shortlist → Situation Test",
+      "Negative marking: −0.25 per wrong answer, GAT only",
+    ],
     programs: [
       "Fashion Design",
       "Leather Design",
@@ -243,11 +258,11 @@ export const courses = {
       "B.F.Tech — Apparel Production",
     ],
     timeline: [
-      ["January", "Applications open"],
+      ["Dec – Jan", "Applications open"],
       ["February", "Written exam"],
       ["March", "Results"],
-      ["May", "Final results"],
-      ["May – June", "Counselling"],
+      ["April", "Situation Test"],
+      ["May – June", "Final results & counselling"],
     ],
   },
   "nid-masters": {
@@ -259,22 +274,22 @@ export const courses = {
     color: "var(--color-track-purple)",
     institute: "National Institute of Design",
     intro:
-      "NID's Master's programs span 5 faculty streams across 19 design domains, offered at Ahmedabad, Gandhinagar and Bangalore campuses.",
+      "NID's Master's programs span 5 faculty streams across 19 design domains, offered at the Ahmedabad, Gandhinagar and Bengaluru campuses.",
     eligibility:
       "A bachelor's degree from a recognised university, OR a four-year full-time diploma in design / fine arts / applied arts / architecture (post-secondary).",
-    pattern: ["Preliminary Test", "Studio Test", "Interview"],
+    pattern: ["DAT Prelims", "DAT Mains — Studio Test", "Personal Interview"],
     programs: [
       "NID Ahmedabad",
       "NID Gandhinagar",
-      "NID Bangalore",
+      "NID Bengaluru",
       "5 faculty streams · 19 design domains",
     ],
     timeline: [
-      ["October", "Applications open"],
-      ["January", "Written exam"],
-      ["February", "Prelim results"],
-      ["May", "Studio test & interview"],
-      ["May", "Final results"],
+      ["Oct – Nov", "Applications open"],
+      ["December", "DAT Prelims"],
+      ["February", "Prelims results"],
+      ["Mar – Apr", "Studio test & interview"],
+      ["April", "Final results"],
     ],
   },
   ceed: {
@@ -284,21 +299,26 @@ export const courses = {
     degree: "M.Des",
     level: "Master's",
     color: "var(--color-track-blue)",
-    institute: "Common Entrance Exam for Design",
+    institute: "Common Entrance Examination for Design",
     intro:
-      "Conducted by IIT Bombay for Master's design programs across eight IITs and IISc Bangalore. No age limit, and you may attempt the exam multiple times.",
+      "Conducted by IIT Bombay for Master's design programs across eight IITs, IISc Bangalore and the two IIITDMs. No age limit, and you may attempt the exam multiple times.",
     eligibility:
       "A degree / diploma / post-graduate program of minimum three years (after 10+2), or currently enrolled in such a program.",
-    pattern: ["Part A — 1 hr, 100 marks (NAT / MCQ / MSQ)", "Part B — 2 hrs, 5 questions (sketching, creativity, form & visual sensitivity, problem identification)"],
+    pattern: [
+      "Part A — 1 hr, computer based (NAT / MCQ / MSQ)",
+      "Part B — 2 hrs, 5 questions (sketching, creativity, form & visual sensitivity, problem identification)",
+      "Final score = 25% Part A + 75% Part B",
+    ],
     programs: [
       "IDC IIT Bombay — Industrial, Communication, Animation, Interaction, Mobility Design",
-      "IISc Bangalore",
-      "IIT Delhi · Guwahati · Hyderabad · Kanpur",
-      "IIITDM Jabalpur",
+      "IISc Bangalore — Centre for Product Design & Manufacturing",
+      "IIT Delhi · Gandhinagar · Guwahati · Hyderabad",
+      "IIT Jodhpur · Kanpur · Roorkee",
+      "IIITDM Jabalpur · IIITDM Kancheepuram",
     ],
     timeline: [
-      ["Sep – Oct", "Applications open"],
-      ["Jan – Feb", "Examination"],
+      ["Oct – Nov", "Applications open"],
+      ["January", "Examination"],
       ["March", "Results"],
     ],
   },
@@ -314,17 +334,21 @@ export const courses = {
       "NIFT's postgraduate programs — Master of Design, Master of Fashion Management and Master of Fashion Technology. No age limit.",
     eligibility:
       "M.Des / M.F.M — Undergraduate degree in any discipline, or a 3-year NIFT/NID diploma. M.F.Tech — B.F.Tech (NIFT) or B.E / B.Tech from a recognised institute.",
-    pattern: ["Written — CAT + GAT (M.Des) / GAT (others)", "Shortlisted → Group Discussion + Personal Interview", "Negative marking: 25% per wrong answer"],
+    pattern: [
+      "Written — CAT + GAT (M.Des) / GAT (others)",
+      "Shortlisted → Group Discussion + Personal Interview",
+      "Negative marking: −0.25 per wrong answer, GAT only",
+    ],
     programs: [
       "Master of Design (M.Des)",
       "Master of Fashion Management (M.F.M)",
       "Master of Fashion Technology (M.F.Tech)",
     ],
     timeline: [
-      ["January", "Applications open"],
+      ["Dec – Jan", "Applications open"],
       ["February", "Written exam"],
       ["March", "Results"],
-      ["April", "Interviews"],
+      ["April", "Group discussion & interview"],
       ["May – June", "Final & counselling"],
     ],
   },
