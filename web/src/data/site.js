@@ -40,13 +40,13 @@ export const home = {
   stats: [
     { value: "3", label: "Entrance exams covered" },
     { value: "6", label: "Degree tracks mentored" },
-    // Kept in step with whoWeAre.team below, which lists NID and NIFT alumni
-    // only. If an IIT-alumni mentor joins the team, add them there and this
-    // can go back to "NID·NIFT·IIT".
-    { value: "NID·NIFT", label: "Alumni mentors" },
+    // Includes IIT: the mentor pool has IIT M.Des alumni who are not among
+    // the three profiles listed in whoWeAre.team below. Add them there if
+    // you want the claim backed up on the page itself.
+    { value: "NID·NIFT·IIT", label: "Alumni mentors" },
   ],
   whatWeDo:
-    "We focus only on three design entrance exams — NID, NIFT and CEED/UCEED — for bachelor's and master's students. Individual training, workshops, skill development and portfolio building, guided by designers from NID and NIFT.",
+    "We focus only on three design entrance exams — NID, NIFT and CEED/UCEED — for bachelor's and master's students. Individual training, workshops, skill development and portfolio building, guided by designers from NID, NIFT and the IITs.",
   faqs: [
     {
       q: "What is a Design Entrance?",
