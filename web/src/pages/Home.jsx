@@ -6,7 +6,6 @@ import CourseCard from "../components/CourseCard";
 import Marquee from "../components/Marquee";
 import CTABand from "../components/CTABand";
 import HeroBust from "../components/HeroBust";
-import Magnetic from "../components/Magnetic";
 
 /** Animated scroll hint pinned to the bottom of the hero. */
 function ScrollCue() {
@@ -67,17 +66,17 @@ export default function Home() {
               </Reveal>
 
               <Reveal mount delay={0.44} className="mt-9">
-                <div className="flex flex-wrap gap-4">
-                  <Magnetic>
-                    <Link to="/courses" className="btn btn-primary">
-                      Explore courses <Arrow />
-                    </Link>
-                  </Magnetic>
-                  <Magnetic>
-                    <Link to="/r-2-d" className="btn btn-ghost">
-                      How it works
-                    </Link>
-                  </Magnetic>
+                {/* No magnetic pull on these — the buttons sit side by side, and
+                    a cursor-tracking offset slides the primary into the link
+                    next to it. The hover lift in .btn-primary is vertical only,
+                    so it can't collide. */}
+                <div className="flex flex-wrap items-center gap-x-7 gap-y-4">
+                  <Link to="/courses" className="btn btn-primary">
+                    Explore courses <Arrow />
+                  </Link>
+                  <Link to="/r-2-d" className="btn btn-ghost">
+                    How it works
+                  </Link>
                 </div>
               </Reveal>
 
@@ -146,11 +145,9 @@ export default function Home() {
               <Eyebrow className="mb-5">Course tracks</Eyebrow>
               <h2 className="display-lg">Pick your D-School</h2>
             </div>
-            <Magnetic>
-              <Link to="/courses" className="btn btn-ghost">
-                All courses <Arrow />
-              </Link>
-            </Magnetic>
+            <Link to="/courses" className="btn btn-ghost">
+              All courses <Arrow />
+            </Link>
           </div>
         </Reveal>
 

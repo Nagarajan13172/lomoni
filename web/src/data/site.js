@@ -187,11 +187,24 @@ export const courses = {
       "DAT Mains — Studio Sensitivity Test",
       "DAT Mains — In-Person Sensitivity Test",
     ],
+    // The disciplines are NOT the same at every campus: Ahmedabad runs the
+    // eight specialised disciplines, while the four newer NIDs run three
+    // broad-based ones. Grouped so the page states which is which.
     programs: [
-      "Offered at NID Ahmedabad, Andhra Pradesh, Assam, Haryana & Madhya Pradesh",
-      "Communication Design — Animation Film, Exhibition, Film & Video, Graphic",
-      "Industrial Design — Ceramic & Glass, Product, Furniture",
-      "Textile, Apparel, Lifestyle & Accessory Design",
+      {
+        campus: "NID Ahmedabad",
+        note: "8 specialised disciplines · 128 seats",
+        items: [
+          "Communication Design — Animation Film, Exhibition, Film & Video, Graphic",
+          "Industrial Design — Ceramic & Glass, Furniture & Interior, Product",
+          "Textile, Apparel, Lifestyle & Accessory — Textile Design",
+        ],
+      },
+      {
+        campus: "NID Andhra Pradesh · Assam · Haryana · Madhya Pradesh",
+        note: "3 broad-based disciplines at each campus",
+        items: ["Communication Design", "Industrial Design", "Textile & Apparel Design"],
+      },
     ],
     timeline: [
       ["Oct – Nov", "Applications open"],

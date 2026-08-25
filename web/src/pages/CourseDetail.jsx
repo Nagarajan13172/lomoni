@@ -38,13 +38,35 @@ export default function CourseDetail() {
     {
       title: "Programs & campuses",
       body: (
-        <ul className="space-y-2.5">
-          {course.programs.map((p) => (
-            <li key={p} className="flex items-start gap-3 text-ink-soft">
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: course.color }} />
-              {p}
-            </li>
-          ))}
+        // An entry is either a plain string, or a { campus, note, items } group
+        // for courses where the disciplines differ by campus — NID B.Des being
+        // the case that needs it: Ahmedabad runs eight specialised disciplines
+        // while the four newer NIDs run three broad-based ones.
+        <ul className="space-y-5">
+          {course.programs.map((p, i) =>
+            typeof p === "string" ? (
+              <li key={i} className="flex items-start gap-3 text-ink-soft">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: course.color }} />
+                {p}
+              </li>
+            ) : (
+              <li key={i}>
+                <div className="font-display font-bold leading-snug text-ink">{p.campus}</div>
+                {p.note && <div className="mt-0.5 text-xs text-ink-soft">{p.note}</div>}
+                <ul className="mt-2.5 space-y-2">
+                  {p.items.map((d) => (
+                    <li key={d} className="flex items-start gap-3 text-sm text-ink-soft">
+                      <span
+                        className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+                        style={{ background: course.color }}
+                      />
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            )
+          )}
         </ul>
       ),
     },
